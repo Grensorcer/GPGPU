@@ -30,6 +30,39 @@ def compute_neighbors(image):
     return image
 
 
+def compute_neighbors_per_patch(image, tile_size=16):
+    # padded_image = np.pad(image, ((1, 1), (1, 1)), mode="reflect")
+    weights = np.array([1, 2, 4, 8, 16, 32, 64, 128])
+    nrows, ncols = image.shape
+    t_nrows = image.shape[0] // tile_size
+    t_ncols = image.shape[1] // tile_size
+
+    for k in range(t_nrows):
+        for l in range(t_ncols):
+            print(
+                "Gone through ",
+                (l + k * t_ncols) * 100 // (t_nrows * t_ncols),
+                "%",
+                end="\r",
+            )
+            patch = image[
+                k * tile_size : (k + 1) * tile_size,
+                l * tile_size : (l + 1) * tile_size,
+            ]
+            padded_patch = np.pad(patch, ((1, 1), (1, 1)), mode="reflect")
+            for i in range(tile_size):
+                for j in range(tile_size):
+                    top_line = padded_patch[i, j : j + 3]
+                    bottom_line = padded_patch[i + 2, j : j + 3]
+                    left = padded_patch[i + 1, j]
+                    right = padded_patch[i + 1, j + 2]
+                    neighbor_vector = np.array([*top_line, right, *bottom_line, left])
+                    neighbor_vector = np.where(neighbor_vector < image[i, j], 0, 1)
+                    patch[i, j] = np.sum(neighbor_vector * weights)
+
+    return image
+
+
 def compute_feature_vector(image, tile_size=16):
     t_nrows = image.shape[0] // tile_size
     t_ncols = image.shape[1] // tile_size
@@ -78,8 +111,10 @@ if __name__ == "__main__":
     nrows, ncols = image.shape
     tile_size = 16
 
-    image = compute_neighbors(image)
+    image = compute_neighbors_per_patch(image, tile_size=tile_size)
     feature_vector = compute_feature_vector(image, tile_size=tile_size)
-    colored_patches = patch_cluster_classify(feature_vector, nrows, ncols, tile_size)
+    colored_patches = patch_cluster_classify(
+        feature_vector, nrows, ncols, tile_size, n_clusters=16
+    )
 
     plt.imsave("test.jpg", colored_patches)
