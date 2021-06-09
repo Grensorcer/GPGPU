@@ -111,7 +111,7 @@ if __name__ == "__main__":
     nrows, ncols = image.shape
     tile_size = 16
 
-    image = compute_neighbors_per_patch(image, tile_size=tile_size)
+    image = compute_neighbors(image)
     feature_vector = compute_feature_vector(image, tile_size=tile_size)
     colored_patches = patch_cluster_classify(
         feature_vector, nrows, ncols, tile_size, n_clusters=16
