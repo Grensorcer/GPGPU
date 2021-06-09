@@ -13,27 +13,23 @@ def rgb2gray(image):
 
 def compute_neighbors(image):
     padded_image = np.pad(image, ((1, 1), (1, 1)), mode="reflect")
-    weights = np.array([1, 2, 4, 8, 16, 32, 64, 128])
-    nrows, ncols = image.shape
 
-    for i in range(nrows):
-        print("Gone through ", i * 100 // nrows, "%", end="\r")
-        for j in range(ncols):
-            top_line = padded_image[i, j : j + 3]
-            bottom_line = padded_image[i + 2, j : j + 3]
-            left = padded_image[i + 1, j]
-            right = padded_image[i + 1, j + 2]
-            neighbor_vector = np.array([*top_line, right, *bottom_line, left])
-            neighbor_vector = np.where(neighbor_vector < image[i, j], 0, 1)
-            image[i, j] = np.sum(neighbor_vector * weights)
+    top_left = np.where(padded_image[:-2, :-2] < image, 0, 1)
+    top = np.where(padded_image[:-2, 1:-1] < image, 0, 1) * 2
+    top_right = np.where(padded_image[:-2, 2:] < image, 0, 1) * 4
+    right = np.where(padded_image[1:-1, 2:] < image, 0, 1) * 8
+    bottom_right = np.where(padded_image[2:, 2:] < image, 0, 1) * 16
+    bottom = np.where(padded_image[2:, 1:-1] < image, 0, 1) * 32
+    bottom_left = np.where(padded_image[2:, :-2] < image, 0, 1) * 64
+    left = np.where(padded_image[1:-1, :-2] < image, 0, 1) * 128
 
+    image = (
+        top_left + top + top_right + left + right + bottom_left + bottom + bottom_right
+    )
     return image
 
 
-def compute_neighbors_per_patch(image, tile_size=16):
-    # padded_image = np.pad(image, ((1, 1), (1, 1)), mode="reflect")
-    weights = np.array([1, 2, 4, 8, 16, 32, 64, 128])
-    nrows, ncols = image.shape
+def compute_neighbors_per_tile(image, tile_size=16):
     t_nrows = image.shape[0] // tile_size
     t_ncols = image.shape[1] // tile_size
 
@@ -49,21 +45,34 @@ def compute_neighbors_per_patch(image, tile_size=16):
                 k * tile_size : (k + 1) * tile_size,
                 l * tile_size : (l + 1) * tile_size,
             ]
-            padded_patch = np.pad(patch, ((1, 1), (1, 1)), mode="reflect")
-            for i in range(tile_size):
-                for j in range(tile_size):
-                    top_line = padded_patch[i, j : j + 3]
-                    bottom_line = padded_patch[i + 2, j : j + 3]
-                    left = padded_patch[i + 1, j]
-                    right = padded_patch[i + 1, j + 2]
-                    neighbor_vector = np.array([*top_line, right, *bottom_line, left])
-                    neighbor_vector = np.where(neighbor_vector < image[i, j], 0, 1)
-                    patch[i, j] = np.sum(neighbor_vector * weights)
+            padded_patch = np.pad(
+                patch, ((1, 1), (1, 1)), mode="constant", constant_values=0
+            )
+
+            top_left = np.where(padded_patch[:-2, :-2] < patch, 0, 1)
+            top = np.where(padded_patch[:-2, 1:-1] < patch, 0, 1) * 2
+            top_right = np.where(padded_patch[:-2, 2:] < patch, 0, 1) * 4
+            right = np.where(padded_patch[1:-1, 2:] < patch, 0, 1) * 8
+            bottom_right = np.where(padded_patch[2:, 2:] < patch, 0, 1) * 16
+            bottom = np.where(padded_patch[2:, 1:-1] < patch, 0, 1) * 32
+            bottom_left = np.where(padded_patch[2:, :-2] < patch, 0, 1) * 64
+            left = np.where(padded_patch[1:-1, :-2] < patch, 0, 1) * 128
+
+            patch = (
+                top_left
+                + top
+                + top_right
+                + left
+                + right
+                + bottom_left
+                + bottom
+                + bottom_right
+            )
 
     return image
 
 
-def compute_feature_vector(image, tile_size=16):
+def compute_feature_vectors(image, tile_size=16):
     t_nrows = image.shape[0] // tile_size
     t_ncols = image.shape[1] // tile_size
     feature_vector = np.zeros(
@@ -112,7 +121,7 @@ if __name__ == "__main__":
     tile_size = 16
 
     image = compute_neighbors(image)
-    feature_vector = compute_feature_vector(image, tile_size=tile_size)
+    feature_vector = compute_feature_vectors(image, tile_size=tile_size)
     colored_patches = patch_cluster_classify(
         feature_vector, nrows, ncols, tile_size, n_clusters=16
     )
