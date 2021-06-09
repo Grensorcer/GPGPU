@@ -67,7 +67,7 @@ def compute_feature_vector(image, tile_size=16):
     t_nrows = image.shape[0] // tile_size
     t_ncols = image.shape[1] // tile_size
     feature_vector = np.zeros(
-        (t_nrows * t_ncols, tile_size * tile_size),
+        (t_nrows * t_ncols, 256),
         dtype="float64",
     )
 
@@ -78,7 +78,7 @@ def compute_feature_vector(image, tile_size=16):
                     i * tile_size : (i + 1) * tile_size,
                     j * tile_size : (j + 1) * tile_size,
                 ].flatten(),
-                minlength=tile_size * tile_size,
+                minlength=256,
             ).astype("float64")
             hist /= np.linalg.norm(hist)
             feature_vector[j + i * t_ncols] = hist
