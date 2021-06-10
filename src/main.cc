@@ -4,8 +4,12 @@
 
 #include "image.hh"
 
+#include "lbp.hh"
+
+// This leak 24 bytes.
 int main(int argc, char* argv[])
 {
+  pouet();
   if (argc != 2)
   {
     std::cerr << "Expected an image or a video\n";
@@ -15,8 +19,8 @@ int main(int argc, char* argv[])
   cv::namedWindow("gpgpu", cv::WINDOW_NORMAL);
   cv::resizeWindow("gpgpu", 600,600);
 
-  cv::VideoCapture capture(argv[1]);
   cv::Mat_<unsigned char> frame;
+  cv::VideoCapture capture(argv[1]);
 
   if (!capture.isOpened())
     throw std::invalid_argument("Error: could not open " + std::string(argv[1]));
@@ -31,9 +35,11 @@ int main(int argc, char* argv[])
 
     cv::imshow("gpgpu", frame);
     cv::resizeWindow ("gpgpu", 400, 200);
+
     // Display the frame for 20ms.
     cv::waitKey(20);
   }
 
   cv::waitKey(0);
+  cv::destroyAllWindows();
 }

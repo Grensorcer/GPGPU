@@ -3,6 +3,7 @@
 [ $# != 1 ] && echo 'Missing args: expect ./run.sh $data_path' && exit 0
 
 data_path="$1"
+bench="build/bin/bench"
 
 progress_bar() {
   local width=20
@@ -28,9 +29,19 @@ done
 
 mkdir "$result_dir"
 
+cd build
+make -j8 &> log.txt
+compil_status="$?"
+cd ..
+if [ ! $compil_status ]
+then
+  cat log.txt
+  exit 1
+fi
+
 # Get CPU and GPU info.
 cat /proc/cpuinfo >> "$result_dir"/log.txt
-nvidia-smi > "$result_dir"/log.txt
+nvidia-smi >> "$result_dir"/log.txt
 
 # Find all jpg in data
 images=$(find "$data_path" -type f -name \*.jpg)
@@ -44,7 +55,7 @@ do
   f=$(basename -- "$img_path")
   result="${f%.*}"
 
-  BENCH="$img_path" ./bench --benchmark_format=csv \
+  BENCH="$img_path" ./"$bench" --benchmark_format=csv \
     2>> "$result_dir"/log.txt \
     1> "$result_dir/""$result".csv
 
