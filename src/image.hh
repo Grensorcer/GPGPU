@@ -2,6 +2,8 @@
 
 #include <opencv2/core/core.hpp>
 
+typedef unsigned char uchar;
+
 struct Image
 {
   Image()

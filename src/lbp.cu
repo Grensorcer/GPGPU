@@ -1,31 +1,75 @@
-#include <stdint.h>
-#include <iostream>
-
 #include "lbp.hh"
+#include "utils.hh"
 
-[[gnu::noinline]]
-void _abortError(const char* msg, const char* fname, int line)
+#if defined(DEBUG)
+  [[gnu::noinline]]
+  void abortOnError(cudaError_t err,
+                    const char* fname, int line,
+                    bool abort_on_error=true)
+  {
+    if (err)
+    {
+      cudaError_t err = cudaGetLastError();
+      Log::err("CudaError at line ", line, " in ", fname, ":\n"
+                "        ", cudaGetErrorName(err), ": ", cudaGetErrorString(err)); 
+
+      if (abort_on_error)
+        std::exit(1);
+    }
+  }
+
+  #define checkErr(err) { abortOnError((err), __FILE__, __LINE__); }
+
+  #define checkKernel() { \
+                        checkErr(cudaPeekAtLastError()); \
+                        checkErr(cudaDeviceSynchronize()); \
+                        }
+#else
+  #define checkErr(err)
+  #define checkKernel()
+#endif
+
+__global__ void blue(uchar* img, size_t width, size_t height, size_t pitch)
 {
-  cudaError_t err = cudaGetLastError();
-  std::exit(1);
+  size_t x = blockDim.x * blockIdx.x + threadIdx.x;
+  size_t y = blockDim.y * blockIdx.y + threadIdx.y;
+
+  if (x >= width || y >= height)
+    return;
+
+  img[y * pitch + x * 3] = 255;
+  img[y * pitch + x * 3 + 1] = 0;
+  img[y * pitch + x * 3 + 2] = 0;
 }
 
-#define abortError(msg) _abortError(msg, __FUNCTION__, __LINE__)
-
-
-struct rgba8_t {
-  int8_t r;
-  int8_t g;
-  int8_t b;
-  int8_t a;
-};
-
-__global__ void heat_lut(float x)
+void extract_feature_vector(uchar *data, unsigned width, unsigned height)
 {
-}
+  uchar* d_img;
+  size_t pitch;
+  checkErr(cudaMallocPitch(&d_img, &pitch, width * 3 * sizeof(uchar), height));
 
-void pouet()
-{
-  heat_lut<<<1, 1>>>(3);
-}
 
+  checkErr(cudaMemcpy2D(d_img, pitch,
+                        data, width * 3,
+                        width * 3, height,
+                        cudaMemcpyHostToDevice));
+
+  {
+    int bsize = 32;
+    int w     = std::ceil((float)width / bsize);
+    int h     = std::ceil((float)height / bsize);
+
+    dim3 dimBlock(bsize, bsize);
+    dim3 dimGrid(w, h);
+
+    blue<<<dimGrid, dimBlock>>>(d_img, width, height, pitch);
+    checkKernel();
+  }
+
+  checkErr(cudaMemcpy2D(data, width * 3,
+                        d_img, pitch,
+                        width * 3, height,
+                        cudaMemcpyDeviceToHost));
+
+  checkErr(cudaFree(d_img));
+}

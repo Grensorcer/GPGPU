@@ -1,3 +1,5 @@
 #pragma once
 
-void pouet();
+typedef unsigned char uchar;
+
+void extract_feature_vector(uchar *data, unsigned rows, unsigned cols);

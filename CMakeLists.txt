@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.17)
 project(CUDA_CMAKE LANGUAGES CXX CUDA)
 
 # All C++ files except main.cc and bench.cc
-set(CXX_SRC)
+set(CXX_SRC src/lbp.hh)
 
 # All cuda files
 set(CUDA_SRC src/lbp.hh src/lbp.cu)
@@ -13,17 +13,19 @@ set(CUDA_SRC src/lbp.hh src/lbp.cu)
 find_package(OpenCV REQUIRED)
 
 # build a shared library with our CUDA code
-add_library(gpuproc SHARED src/lbp.cu)
+add_library(gpuproc SHARED ${CUDA_SRC})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -O0 -DDEBUG")
+set(CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG} -DDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3")
 
 target_compile_features(gpuproc PUBLIC cxx_std_17)
 set_target_properties(gpuproc PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 target_link_libraries(gpuproc)
 
 # build the C++ code and link with the CUDA code
-add_executable(lbp src/main.cc)
+add_executable(lbp src/main.cc ${CXX_SRC})
 
 target_link_libraries(lbp gpuproc
   opencv_core
@@ -47,6 +49,7 @@ if (NOT GoogleBenchmark_POPULATED)
 endif()
 
 add_executable(bench ${SRC} bench_src/bench.cc)
+target_compile_features(bench PUBLIC cxx_std_17)
 target_include_directories(bench PUBLIC ${googlebenchmark_SOURCE_DIR}/include)
 target_include_directories(bench PUBLIC "${PROJECT_SOURCE_DIR}/src")
 target_link_libraries(bench PRIVATE opencv_core opencv_video opencv_videoio opencv_highgui benchmark)
