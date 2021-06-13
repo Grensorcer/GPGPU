@@ -51,34 +51,16 @@ int main(int argc, char* argv[])
       std::fstream f("out.csv", std::fstream::out);
       f << "val,\n";
 
-      for (unsigned i = 0; i < 50*50; ++i)
+      unsigned nb_tiles_x = img.cols / 16;
+      unsigned nb_tiles_y = img.rows / 16;
+
+      for (unsigned i = 0; i < nb_tiles_x * nb_tiles_y; ++i)
       {
         unsigned short *h = hists + 256 * i;
 
         for (unsigned j = 0; j < 256; j++)
           f << h[j] << ",\n"; 
       }
-
-      /*
-      for (size_t y_begin = 0; y_begin < img.rows; y_begin += 16)
-      {
-        size_t y_end = y_begin + 16;
-
-        if (y_end > img.rows)
-          continue;
-
-        for (size_t x_begin = 0; x_begin < img.cols; x_begin += 16)
-        {
-          size_t x_end = x_begin + 16;
-          if (x_end > img.cols)
-            continue;
-
-          for (size_t y = y_begin; y < y_end; ++y)
-            for (size_t x = x_begin; x < x_end; ++x)
-              f << std::to_string(img.data[(y * img.cols + x) * 3]) << ",\n"; 
-        }
-      }
-      */
 
       f.close();
 

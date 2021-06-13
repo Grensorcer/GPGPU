@@ -61,6 +61,7 @@ __global__ void compare_neighbors(uchar* data,
   uchar c = pix[0];
 
   *res = 0;
+
   for (size_t j = 0; j < 3; ++j)
     for (size_t i = 0; i < 3; ++i)
       if (
@@ -69,15 +70,14 @@ __global__ void compare_neighbors(uchar* data,
           // Do not compare the pix with itself
           && (i != 1 && j != 1)
           //Finally, compare the pixel with its neighbor
-          && data[(y + j - 1) * pitch + (x + i - 1) * 3] >= c
+          && data[(y + j - 1ULL) * pitch + (x + i - 1ULL) * 3ULL] > c
           )
       {
         // The results of the compraison is store in a single bit
-        unsigned idx = i * 3 + j;
+        unsigned idx = i * 3U + j;
         if (idx > 4) --idx;
-        *res |= 1U << idx;
+        *res = 255; //|= 1U << idx;
       }
-
 }
 
 __global__ void compute_histograms_by_tiles(uchar* data,
@@ -101,7 +101,9 @@ __global__ void compute_histograms_by_tiles(uchar* data,
   size_t x_end = x_begin + tile_dim;
   size_t y_end = y_begin + tile_dim;
 
-  unsigned short* h = (unsigned short*)(hists + (y_tile * 50 + x_tile) * h_pitch);
+  unsigned nb_tiles_x = width / 16;
+
+  unsigned short* h = (unsigned short*)(hists + (y_tile * nb_tiles_x + x_tile) * h_pitch);
 
   for (unsigned i = 0; i < 256; i++)
     h[i] = 0;
@@ -145,9 +147,13 @@ unsigned short* extract_feature_vector(uchar* data, unsigned width, unsigned hei
     w = std::ceil((float)width  / 16 / bsize);
     h = std::ceil((float)height / 16 / bsize);
 
+    unsigned nb_tiles_x = width / 16;
+    unsigned nb_tiles_y = height / 16;
+
     char* hists;
     size_t h_pitch;
-    checkErr(cudaMallocPitch(&hists, &h_pitch, 256 * sizeof(short), 50 * 50));
+    checkErr(cudaMallocPitch(&hists, &h_pitch, 256 * sizeof(short), nb_tiles_x
+          * nb_tiles_y));
 
     dimGrid = dim3(w, h);
     Log::dbg("compute_histograms_by_tiles(): dimGrid: ", w, ' ', h);
@@ -161,18 +167,21 @@ unsigned short* extract_feature_vector(uchar* data, unsigned width, unsigned hei
                         d_img, pitch,
                         width * 3, height,
                         cudaMemcpyDeviceToHost));
-
+#if defined(DEBUG)
+  // Only keep the texton
   for (size_t y = 0; y < height; ++y)
     for (size_t x = 0; x < width; ++x)
     {
-      data[(y * width + x) * 3] = 0;
+      data[(y * width + x) * 3 + 0] = 0;
       data[(y * width + x) * 3 + 2] = 0;
     }
+#endif
 
-  unsigned short* h_hists = (unsigned short*)malloc(256 * 50 * 50 * sizeof(short));
+  unsigned short* h_hists = (unsigned short*)malloc(256 * nb_tiles_x
+      * nb_tiles_y * sizeof(short));
   checkErr(cudaMemcpy2D(h_hists, 256 * sizeof(unsigned short),
                         hists, h_pitch,
-                        256*sizeof(short), 50*50,
+                        256*sizeof(short), nb_tiles_x * nb_tiles_y,
                         cudaMemcpyDeviceToHost));
 
   checkErr(cudaFree(d_img));
