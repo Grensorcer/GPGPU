@@ -7,6 +7,9 @@
 
 #include "lbp.hh"
 
+#include <string>
+#include <fstream>
+
 // This leak 24 bytes.
 int main(int argc, char* argv[])
 {
@@ -33,7 +36,7 @@ int main(int argc, char* argv[])
   for (capture >> frame; !frame.empty(); capture >> frame)
   {
     Image img(frame);
-    extract_feature_vector(img.data, img.rows, img.cols);
+    unsigned short* hists = extract_feature_vector(img.data, img.rows, img.cols);
 
     if (display_image)
     {
@@ -45,12 +48,48 @@ int main(int argc, char* argv[])
     }
     else
     {
+      std::fstream f("out.csv", std::fstream::out);
+      f << "val,\n";
+
+      for (unsigned i = 0; i < 50*50; ++i)
+      {
+        unsigned short *h = hists + 256 * i;
+
+        for (unsigned j = 0; j < 256; j++)
+          f << h[j] << ",\n"; 
+      }
+
+      /*
+      for (size_t y_begin = 0; y_begin < img.rows; y_begin += 16)
+      {
+        size_t y_end = y_begin + 16;
+
+        if (y_end > img.rows)
+          continue;
+
+        for (size_t x_begin = 0; x_begin < img.cols; x_begin += 16)
+        {
+          size_t x_end = x_begin + 16;
+          if (x_end > img.cols)
+            continue;
+
+          for (size_t y = y_begin; y < y_end; ++y)
+            for (size_t x = x_begin; x < x_end; ++x)
+              f << std::to_string(img.data[(y * img.cols + x) * 3]) << ",\n"; 
+        }
+      }
+      */
+
+      f.close();
+
+      Log::dbg(img.rows / 16, ' ', img.cols / 16);
+
       cv::imwrite("out.jpg", frame);
       return 0;
     }
   }
 
-  if (display_image)
+    if (display_image)
   {
     cv::waitKey(0);
     cv::destroyAllWindows();

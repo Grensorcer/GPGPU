@@ -18,43 +18,113 @@
     }
   }
 
-  #define checkErr(err) { abortOnError((err), __FILE__, __LINE__); }
+  #define checkErr(cudaCall) { abortOnError((cudaCall), __FILE__, __LINE__); }
 
-  #define checkKernel() { \
-                        checkErr(cudaPeekAtLastError()); \
-                        checkErr(cudaDeviceSynchronize()); \
+  #define checkKernel() {                                     \
+                          checkErr(cudaPeekAtLastError());    \
+                          checkErr(cudaDeviceSynchronize());  \
                         }
 #else
-  #define checkErr(err)
+  #define checkErr(cudaCall) cudaCall
   #define checkKernel()
 #endif
 
-__global__ void blue(uchar* img, size_t width, size_t height, size_t pitch)
+__global__ void greyscale(uchar* data, size_t width, size_t height, size_t pitch)
 {
+  // input  data: image bgr
+  // otuput data[... + 0] image grey 
   size_t x = blockDim.x * blockIdx.x + threadIdx.x;
   size_t y = blockDim.y * blockIdx.y + threadIdx.y;
 
   if (x >= width || y >= height)
     return;
 
-  img[y * pitch + x * 3] = 255;
-  img[y * pitch + x * 3 + 1] = 0;
-  img[y * pitch + x * 3 + 2] = 0;
+  uchar* pix = &data[y * pitch + x * 3];
+  char grey = pix[0] / 3 + pix[1] / 3 + pix[2] / 3;
+
+  pix[0] = grey;
 }
 
-void extract_feature_vector(uchar *data, unsigned width, unsigned height)
+__global__ void compare_neighbors(uchar* data,
+                                  size_t width, size_t height, size_t pitch)
+{
+  // input  data[... + 0] image grey
+  // output data[... + 1] texton
+  size_t x = blockDim.x * blockIdx.x + threadIdx.x;
+  size_t y = blockDim.y * blockIdx.y + threadIdx.y;
+
+  if (x >= width || y >= height)
+    return;
+
+  uchar* pix = &data[y * pitch + x * 3];
+  uchar* res = &pix[1];
+  uchar c = pix[0];
+
+  *res = 0;
+  for (size_t j = 0; j < 3; ++j)
+    for (size_t i = 0; i < 3; ++i)
+      if (
+          // Checks the boundary, consider the pixels outside of the image as 0
+          (x + i - 1) < width && (y + j - 1) < height 
+          // Do not compare the pix with itself
+          && (i != 1 && j != 1)
+          //Finally, compare the pixel with its neighbor
+          && data[(y + j - 1) * pitch + (x + i - 1) * 3] >= c
+          )
+      {
+        // The results of the compraison is store in a single bit
+        unsigned idx = i * 3 + j;
+        if (idx > 4) --idx;
+        *res |= 1U << idx;
+      }
+
+}
+
+__global__ void compute_histograms_by_tiles(uchar* data,
+                                            size_t width, size_t height,
+                                            size_t pitch,
+                                            size_t tile_dim,
+                                            char* hists,
+                                            size_t h_pitch)
+{
+  // input  data[... + 1] = texton
+  // output data[... + 0] = histograms (in each tile)
+
+  size_t x_tile = blockDim.x * blockIdx.x + threadIdx.x;
+  size_t y_tile = blockDim.y * blockIdx.y + threadIdx.y;
+  size_t x_begin = x_tile * tile_dim;
+  size_t y_begin = y_tile * tile_dim;
+
+  if (x_begin >= width || y_begin >= height)
+    return;
+
+  size_t x_end = x_begin + tile_dim;
+  size_t y_end = y_begin + tile_dim;
+
+  unsigned short* h = (unsigned short*)(hists + (y_tile * 50 + x_tile) * h_pitch);
+
+  for (unsigned i = 0; i < 256; i++)
+    h[i] = 0;
+
+  for (size_t y = y_begin; y < y_end && y < height; ++y)
+    for (size_t x = x_begin; x < x_end && x < width; ++x)
+    {
+      uchar texton = data[y * pitch + x * 3 + 1];
+      h[texton]++;
+    }
+}
+
+unsigned short* extract_feature_vector(uchar* data, unsigned width, unsigned height)
 {
   uchar* d_img;
   size_t pitch;
   checkErr(cudaMallocPitch(&d_img, &pitch, width * 3 * sizeof(uchar), height));
-
 
   checkErr(cudaMemcpy2D(d_img, pitch,
                         data, width * 3,
                         width * 3, height,
                         cudaMemcpyHostToDevice));
 
-  {
     int bsize = 32;
     int w     = std::ceil((float)width / bsize);
     int h     = std::ceil((float)height / bsize);
@@ -62,14 +132,50 @@ void extract_feature_vector(uchar *data, unsigned width, unsigned height)
     dim3 dimBlock(bsize, bsize);
     dim3 dimGrid(w, h);
 
-    blue<<<dimGrid, dimBlock>>>(d_img, width, height, pitch);
+    Log::dbg("greyscale() + compare_neighbors(): dimGrid: ", w, ' ', h);
+
+    greyscale<<<dimGrid, dimBlock>>>(d_img, width, height, pitch);
     checkKernel();
-  }
+    cudaDeviceSynchronize();
+
+    compare_neighbors<<<dimGrid, dimBlock>>>(d_img, width, height, pitch);
+    checkKernel();
+    cudaDeviceSynchronize();
+
+    w = std::ceil((float)width  / 16 / bsize);
+    h = std::ceil((float)height / 16 / bsize);
+
+    char* hists;
+    size_t h_pitch;
+    checkErr(cudaMallocPitch(&hists, &h_pitch, 256 * sizeof(short), 50 * 50));
+
+    dimGrid = dim3(w, h);
+    Log::dbg("compute_histograms_by_tiles(): dimGrid: ", w, ' ', h);
+    compute_histograms_by_tiles<<<dimGrid, dimBlock>>>(d_img, width, height,
+        pitch, 16, hists, h_pitch);
+
+    checkKernel();
+    cudaDeviceSynchronize();
 
   checkErr(cudaMemcpy2D(data, width * 3,
                         d_img, pitch,
                         width * 3, height,
                         cudaMemcpyDeviceToHost));
 
+  for (size_t y = 0; y < height; ++y)
+    for (size_t x = 0; x < width; ++x)
+    {
+      data[(y * width + x) * 3] = 0;
+      data[(y * width + x) * 3 + 2] = 0;
+    }
+
+  unsigned short* h_hists = (unsigned short*)malloc(256 * 50 * 50 * sizeof(short));
+  checkErr(cudaMemcpy2D(h_hists, 256 * sizeof(unsigned short),
+                        hists, h_pitch,
+                        256*sizeof(short), 50*50,
+                        cudaMemcpyDeviceToHost));
+
   checkErr(cudaFree(d_img));
+
+  return h_hists;
 }
