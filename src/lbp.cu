@@ -40,7 +40,7 @@ __global__ void greyscale(uchar* data, size_t width, size_t height, size_t pitch
     return;
 
   uchar* pix = &data[y * pitch + x * 3];
-  char grey = pix[0] / 3 + pix[1] / 3 + pix[2] / 3;
+  uchar grey = pix[0] / 3 + pix[1] / 3 + pix[2] / 3;
 
   pix[0] = grey;
 }
@@ -60,8 +60,9 @@ __global__ void compare_neighbors(uchar* data,
   uchar* res = &pix[1];
   uchar c = pix[0];
 
-  *res = 0;
+  (*res) = 0;
 
+#pragma unroll
   for (size_t j = 0; j < 3; ++j)
     for (size_t i = 0; i < 3; ++i)
       if (
@@ -70,13 +71,14 @@ __global__ void compare_neighbors(uchar* data,
           // Do not compare the pix with itself
           && (i != 1 && j != 1)
           //Finally, compare the pixel with its neighbor
-          && data[(y + j - 1ULL) * pitch + (x + i - 1ULL) * 3ULL] > c
+          && data[(y + j - 1ULL) * pitch + (x + i - 1ULL) * 3ULL] >= c
           )
       {
         // The results of the compraison is store in a single bit
         unsigned idx = i * 3U + j;
-        if (idx > 4) --idx;
-        *res = 255; //|= 1U << idx;
+        if (idx > 4)
+          --idx;
+        (*res) |= 1U << idx;
       }
 }
 
@@ -127,46 +129,47 @@ unsigned short* extract_feature_vector(uchar* data, unsigned width, unsigned hei
                         width * 3, height,
                         cudaMemcpyHostToDevice));
 
-    int bsize = 32;
-    int w     = std::ceil((float)width / bsize);
-    int h     = std::ceil((float)height / bsize);
+  int bsize = 32;
+  int w     = std::ceil((float)width / bsize);
+  int h     = std::ceil((float)height / bsize);
 
-    dim3 dimBlock(bsize, bsize);
-    dim3 dimGrid(w, h);
+  dim3 dimBlock(bsize, bsize);
+  dim3 dimGrid(w, h);
 
-    Log::dbg("greyscale() + compare_neighbors(): dimGrid: ", w, ' ', h);
+  Log::dbg("greyscale() + compare_neighbors(): dimGrid: ", w, ' ', h);
 
-    greyscale<<<dimGrid, dimBlock>>>(d_img, width, height, pitch);
-    checkKernel();
-    cudaDeviceSynchronize();
+  greyscale<<<dimGrid, dimBlock>>>(d_img, width, height, pitch);
+  checkKernel();
+  cudaDeviceSynchronize();
 
-    compare_neighbors<<<dimGrid, dimBlock>>>(d_img, width, height, pitch);
-    checkKernel();
-    cudaDeviceSynchronize();
+  compare_neighbors<<<dimGrid, dimBlock>>>(d_img, width, height, pitch);
+  checkKernel();
+  cudaDeviceSynchronize();
 
-    w = std::ceil((float)width  / 16 / bsize);
-    h = std::ceil((float)height / 16 / bsize);
+  w = std::ceil((float)width  / 16 / bsize);
+  h = std::ceil((float)height / 16 / bsize);
 
-    unsigned nb_tiles_x = width / 16;
-    unsigned nb_tiles_y = height / 16;
+  unsigned nb_tiles_x = width / 16;
+  unsigned nb_tiles_y = height / 16;
 
-    char* hists;
-    size_t h_pitch;
-    checkErr(cudaMallocPitch(&hists, &h_pitch, 256 * sizeof(short), nb_tiles_x
-          * nb_tiles_y));
+  char* hists;
+  size_t h_pitch;
+  checkErr(cudaMallocPitch(&hists, &h_pitch, 256 * sizeof(short), nb_tiles_x
+        * nb_tiles_y));
 
-    dimGrid = dim3(w, h);
-    Log::dbg("compute_histograms_by_tiles(): dimGrid: ", w, ' ', h);
-    compute_histograms_by_tiles<<<dimGrid, dimBlock>>>(d_img, width, height,
-        pitch, 16, hists, h_pitch);
+  dimGrid = dim3(w, h);
+  Log::dbg("compute_histograms_by_tiles(): dimGrid: ", w, ' ', h);
+  compute_histograms_by_tiles<<<dimGrid, dimBlock>>>(d_img, width, height,
+      pitch, 16, hists, h_pitch);
 
-    checkKernel();
-    cudaDeviceSynchronize();
+  checkKernel();
+  cudaDeviceSynchronize();
 
   checkErr(cudaMemcpy2D(data, width * 3,
                         d_img, pitch,
                         width * 3, height,
                         cudaMemcpyDeviceToHost));
+
 #if defined(DEBUG)
   // Only keep the texton
   for (size_t y = 0; y < height; ++y)

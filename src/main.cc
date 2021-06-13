@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
   for (capture >> frame; !frame.empty(); capture >> frame)
   {
     Image img(frame);
-    unsigned short* hists = extract_feature_vector(img.data, img.rows, img.cols);
+    unsigned short* hists = extract_feature_vector(img.data, img.cols, img.rows);
 
     if (display_image)
     {
