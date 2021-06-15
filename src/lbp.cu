@@ -71,7 +71,8 @@ __global__ void compare_neighbors(uchar* data,
           // Do not compare the pix with itself
           && (i != 1 && j != 1)
           //Finally, compare the pixel with its neighbor
-          && data[(y + j - 1ULL) * pitch + (x + i - 1ULL) * 3ULL] >= c
+          && long(data[(y + j - 1ULL) * pitch + (x + i - 1ULL) * 3ULL])
+          - long(c) >= 0
           )
       {
         // The results of the compraison is store in a single bit
@@ -122,11 +123,12 @@ unsigned short* extract_feature_vector(uchar* data, unsigned width, unsigned hei
 {
   uchar* d_img;
   size_t pitch;
+
   checkErr(cudaMallocPitch(&d_img, &pitch, width * 3 * sizeof(uchar), height));
 
   checkErr(cudaMemcpy2D(d_img, pitch,
-                        data, width * 3,
-                        width * 3, height,
+                        data, 3 * width * sizeof(uchar),
+                        width * sizeof(uchar), height,
                         cudaMemcpyHostToDevice));
 
   int bsize = 32;
@@ -165,11 +167,12 @@ unsigned short* extract_feature_vector(uchar* data, unsigned width, unsigned hei
   checkKernel();
   cudaDeviceSynchronize();
 
+/*
   checkErr(cudaMemcpy2D(data, width * 3,
                         d_img, pitch,
                         width * 3, height,
                         cudaMemcpyDeviceToHost));
-
+*/
 #if defined(DEBUG)
   // Only keep the texton
   for (size_t y = 0; y < height; ++y)

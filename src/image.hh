@@ -16,7 +16,7 @@ struct Image
 
   explicit Image(cv::Mat& cv_mat)
     : data(cv_mat.data)
-    , rows(cv_mat.rows)
+    , rows(cv_mat.rows / 3)
     , cols(cv_mat.cols)
     , stride(cv_mat.step[0])
   {
