@@ -3,7 +3,7 @@
 [ $# != 1 ] && echo 'Missing args: expect ./run.sh $data_path' && exit 0
 
 data_path="$1"
-bench="build/bin/bench"
+bench="release/bench"
 
 progress_bar() {
   local width=20
@@ -29,8 +29,8 @@ done
 
 mkdir "$result_dir"
 
-cd build
-make -j8 &> log.txt
+cd release
+make -j8 &> ../"$result_dir"/log.txt
 compil_status="$?"
 cd ..
 if [ ! $compil_status ]
@@ -54,6 +54,7 @@ do
   progress_bar cur nb_img
   f=$(basename -- "$img_path")
   result="${f%.*}"
+  echo "Run bench with " "$img_path" >> "$result_dir"/log.txt \
 
   BENCH="$img_path" ./"$bench" --benchmark_format=csv \
     2>> "$result_dir"/log.txt \

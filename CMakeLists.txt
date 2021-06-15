@@ -52,5 +52,10 @@ add_executable(bench ${SRC} bench_src/bench.cc)
 target_compile_features(bench PUBLIC cxx_std_17)
 target_include_directories(bench PUBLIC ${googlebenchmark_SOURCE_DIR}/include)
 target_include_directories(bench PUBLIC "${PROJECT_SOURCE_DIR}/src")
-target_link_libraries(bench PRIVATE opencv_core opencv_video opencv_videoio opencv_highgui benchmark)
-
+target_link_libraries(bench gpuproc
+  opencv_core
+  opencv_video
+  opencv_videoio
+  opencv_highgui
+  benchmark
+)

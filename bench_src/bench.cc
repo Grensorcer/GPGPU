@@ -2,9 +2,10 @@
 #include <vector>
 #include <opencv2/core/core.hpp>
 #include <benchmark/benchmark.h>
-#include <opencv2/videoio.hpp>
+#include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 
+#include "lbp.hh"
 #include "utils.hh"
 #include "image.hh"
 
@@ -19,16 +20,16 @@ std::vector<cvmat> data = []()
     exit(1);
   }
 
-  cv::VideoCapture capture(path);
-  if (!capture.isOpened())
-    throw "Error when reading steam_avi";
-
-  cvmat full_img;
-  capture >> full_img;
+  cvmat full_img = cv::imread(path, cv::IMREAD_COLOR);
 
   std::vector<cvmat> data;
+  if (full_img.rows == 0 && full_img.cols == 0)
+  {
+    Log::err("Cannot load data in '", path, "' (maybe the file does not exist ?)");
+    exit(1);
+  }
 
-  for (unsigned i = 1; i < 4; ++i)
+  for (unsigned i = 1; i < 5; ++i)
   {
     float f = 0.2*i;
     cv::Mat img;
@@ -37,11 +38,10 @@ std::vector<cvmat> data = []()
     data.push_back(img);
   }
 
-  data.push_back(full_img);
   return data;
 }();
 
-static void cpu(benchmark::State& s)
+static void warmup(benchmark::State& s)
 {
   Image img;
 
@@ -49,7 +49,8 @@ static void cpu(benchmark::State& s)
   {
     img = Image(data[s.range(0)]);
     benchmark::ClobberMemory();
-    // TODO add func
+    benchmark::DoNotOptimize(extract_feature_vector(img.data, img.cols, img.rows));
+    
     benchmark::DoNotOptimize(img);
   }
 
@@ -58,5 +59,27 @@ static void cpu(benchmark::State& s)
   s.counters["pix"] = img.rows * img.cols; 
 }
 
-BENCHMARK(cpu)->DenseRange(0, data.size() - 1);
+
+static void gpu(benchmark::State& s)
+{
+  Image img;
+
+  for (auto _ : s)
+  {
+    img = Image(data[s.range(0)]);
+    benchmark::ClobberMemory();
+    unsigned short *res;
+    benchmark::DoNotOptimize(res = extract_feature_vector(img.data, img.cols, img.rows));
+    free(res);
+    
+    benchmark::DoNotOptimize(img);
+  }
+
+  s.counters["rows"] = img.rows; 
+  s.counters["cols"] = img.cols; 
+  s.counters["pix"] = img.rows * img.cols; 
+}
+
+BENCHMARK(warmup)->DenseRange(0, data.size() - 1);
+BENCHMARK(gpu)->DenseRange(0, data.size() - 1);
 BENCHMARK_MAIN();
