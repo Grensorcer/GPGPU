@@ -36,7 +36,14 @@ int main(int argc, char* argv[])
   for (capture >> frame; !frame.empty(); capture >> frame)
   {
     Image img(frame);
-    unsigned short* hists = extract_feature_vector(img.data, img.cols, img.rows);
+
+#if defined(naive)
+    typedef unsigned short* rtype;
+    rtype hists = extract_feature_vector_naive(img.data, img.cols, img.rows);
+#else
+    typedef unsigned * rtype;
+    rtype hists = extract_feature_vector_v1(img.data, img.cols, img.rows);
+#endif
 
     if (display_image)
     {
@@ -56,7 +63,7 @@ int main(int argc, char* argv[])
 
       for (unsigned i = 0; i < nb_tiles_x * nb_tiles_y; ++i)
       {
-        unsigned short *h = hists + 256 * i;
+        rtype h = hists + 256 * i;
 
         for (unsigned j = 0; j < 256; j++)
           f << h[j] << ",\n"; 
@@ -64,7 +71,7 @@ int main(int argc, char* argv[])
 
       f.close();
 
-      Log::dbg(img.rows / 16, ' ', img.cols / 16);
+      Log::dbg(img.rows / 16, ' ', img.cols/ 16);
 
       cv::imwrite("out.jpg", frame);
       return 0;

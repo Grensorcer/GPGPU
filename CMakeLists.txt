@@ -7,7 +7,7 @@ project(CUDA_CMAKE LANGUAGES CXX CUDA)
 set(CXX_SRC src/lbp.hh)
 
 # All cuda files
-set(CUDA_SRC src/lbp.hh src/lbp.cu)
+set(CUDA_SRC src/lbp.hh src/lbp.cu src/lbp2.cu)
 
 # find dependencies
 find_package(OpenCV REQUIRED)

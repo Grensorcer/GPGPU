@@ -49,7 +49,7 @@ static void warmup(benchmark::State& s)
   {
     img = Image(data[s.range(0)]);
     benchmark::ClobberMemory();
-    benchmark::DoNotOptimize(extract_feature_vector(img.data, img.cols, img.rows));
+    benchmark::DoNotOptimize(extract_feature_vector_naive(img.data, img.cols, img.rows));
     
     benchmark::DoNotOptimize(img);
   }
@@ -60,7 +60,7 @@ static void warmup(benchmark::State& s)
 }
 
 
-static void gpu(benchmark::State& s)
+static void naive(benchmark::State& s)
 {
   Image img;
 
@@ -69,7 +69,7 @@ static void gpu(benchmark::State& s)
     img = Image(data[s.range(0)]);
     benchmark::ClobberMemory();
     unsigned short *res;
-    benchmark::DoNotOptimize(res = extract_feature_vector(img.data, img.cols, img.rows));
+    benchmark::DoNotOptimize(res = extract_feature_vector_naive(img.data, img.cols, img.rows));
     free(res);
     
     benchmark::DoNotOptimize(img);
@@ -81,5 +81,5 @@ static void gpu(benchmark::State& s)
 }
 
 BENCHMARK(warmup)->DenseRange(0, data.size() - 1);
-BENCHMARK(gpu)->DenseRange(0, data.size() - 1);
+BENCHMARK(naive)->DenseRange(0, data.size() - 1);
 BENCHMARK_MAIN();

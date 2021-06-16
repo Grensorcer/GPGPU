@@ -2,21 +2,12 @@
 #include "utils.hh"
 
 #if defined(DEBUG)
+
+  // Defined in lbp.cu
   [[gnu::noinline]]
   void abortOnError(cudaError_t err,
                     const char* fname, int line,
-                    bool abort_on_error=true)
-  {
-    if (err)
-    {
-      cudaError_t err = cudaGetLastError();
-      Log::err("CudaError at line ", line, " in ", fname, ":\n"
-                "        ", cudaGetErrorName(err), ": ", cudaGetErrorString(err)); 
-
-      if (abort_on_error)
-        std::exit(1);
-    }
-  }
+                    bool abort_on_error=true);
 
   #define checkErr(cudaCall) { abortOnError((cudaCall), __FILE__, __LINE__); }
 
@@ -29,7 +20,7 @@
   #define checkKernel()
 #endif
 
-__global__ void greyscale(uchar* data, size_t width, size_t height, size_t pitch)
+__global__ void greyscale_opti(uchar* data, size_t width, size_t height, size_t pitch)
 {
   // input  data: image bgr
   // otuput data[... + 0] image grey 
@@ -45,7 +36,7 @@ __global__ void greyscale(uchar* data, size_t width, size_t height, size_t pitch
   pix[0] = grey;
 }
 
-__global__ void compare_neighbors(uchar* data,
+__global__ void compare_neighbors_opti(uchar* data,
                                   size_t width, size_t height, size_t pitch)
 {
   // input  data[... + 0] image grey
@@ -83,7 +74,7 @@ __global__ void compare_neighbors(uchar* data,
       }
 }
 
-__global__ void compute_histograms_by_tiles(uchar* data,
+__global__ void compute_histograms_by_tiles_opti(uchar* data,
                                             size_t width, size_t height,
                                             size_t pitch,
                                             size_t tile_dim,
@@ -93,33 +84,34 @@ __global__ void compute_histograms_by_tiles(uchar* data,
   // input  data[... + 1] = texton
   // output data[... + 0] = histograms (in each tile)
 
-  size_t x_tile = blockDim.x * blockIdx.x + threadIdx.x;
-  size_t y_tile = blockDim.y * blockIdx.y + threadIdx.y;
+  size_t x_tile = blockDim.x * blockIdx.x;
+  size_t y_tile = blockDim.y * blockIdx.y;
   size_t x_begin = x_tile * tile_dim;
   size_t y_begin = y_tile * tile_dim;
 
   if (x_begin >= width || y_begin >= height)
     return;
 
-  size_t x_end = x_begin + tile_dim;
+  //size_t x_end = x_begin + tile_dim;
   size_t y_end = y_begin + tile_dim;
 
   unsigned nb_tiles_x = width / 16;
 
-  unsigned short* h = (unsigned short*)(hists + (y_tile * nb_tiles_x + x_tile) * h_pitch);
+  unsigned* h = (unsigned *)(hists + (y_tile * nb_tiles_x + x_tile) * h_pitch);
 
   for (unsigned i = 0; i < 256; i++)
     h[i] = 0;
 
-  for (size_t y = y_begin; y < y_end && y < height; ++y)
-    for (size_t x = x_begin; x < x_end && x < width; ++x)
+  __syncthreads();
+
+  for (size_t y = y_begin; y < y_end && y < height; y += 2)
     {
-      uchar texton = data[y * pitch + x * 3 + 1];
-      h[texton]++;
+      uchar texton = data[(y + threadIdx.y) * pitch + threadIdx.x * 3 + 1];
+      atomicAdd(&h[texton], 1);
     }
 }
 
-unsigned short* extract_feature_vector_naive(uchar* data, unsigned width, unsigned height)
+unsigned * extract_feature_vector_v1(uchar* data, unsigned width, unsigned height)
 {
   uchar* d_img;
   size_t pitch;
@@ -140,28 +132,28 @@ unsigned short* extract_feature_vector_naive(uchar* data, unsigned width, unsign
 
   Log::dbg("greyscale() + compare_neighbors(): dimGrid: ", w, ' ', h);
 
-  greyscale<<<dimGrid, dimBlock>>>(d_img, width, height, pitch);
+  greyscale_opti<<<dimGrid, dimBlock>>>(d_img, width, height, pitch);
   checkKernel();
   cudaDeviceSynchronize();
 
-  compare_neighbors<<<dimGrid, dimBlock>>>(d_img, width, height, pitch);
+  compare_neighbors_opti<<<dimGrid, dimBlock>>>(d_img, width, height, pitch);
   checkKernel();
   cudaDeviceSynchronize();
 
-  w = std::ceil((float)width  / 16 / bsize);
-  h = std::ceil((float)height / 16 / bsize);
+  w = std::ceil((float)width  / 16);
+  h = std::ceil((float)height / 16);
 
   unsigned nb_tiles_x = width / 16;
   unsigned nb_tiles_y = height / 16;
 
   char* hists;
   size_t h_pitch;
-  checkErr(cudaMallocPitch(&hists, &h_pitch, 256 * sizeof(short), nb_tiles_x
+  checkErr(cudaMallocPitch(&hists, &h_pitch, 256 * sizeof(unsigned), nb_tiles_x
         * nb_tiles_y));
 
   dimGrid = dim3(w, h);
   Log::dbg("compute_histograms_by_tiles(): dimGrid: ", w, ' ', h);
-  compute_histograms_by_tiles<<<dimGrid, dimBlock>>>(d_img, width, height,
+  compute_histograms_by_tiles_opti<<<dimGrid, dimBlock>>>(d_img, width, height,
       pitch, 16, hists, h_pitch);
 
   checkKernel();
@@ -183,11 +175,11 @@ unsigned short* extract_feature_vector_naive(uchar* data, unsigned width, unsign
     }
 #endif
 
-  unsigned short* h_hists = (unsigned short*)malloc(256 * nb_tiles_x
-      * nb_tiles_y * sizeof(short));
-  checkErr(cudaMemcpy2D(h_hists, 256 * sizeof(unsigned short),
+  unsigned * h_hists = (unsigned *)malloc(256 * nb_tiles_x
+      * nb_tiles_y * sizeof(unsigned));
+  checkErr(cudaMemcpy2D(h_hists, 256 * sizeof(unsigned),
                         hists, h_pitch,
-                        256*sizeof(short), nb_tiles_x * nb_tiles_y,
+                        256*sizeof(unsigned), nb_tiles_x * nb_tiles_y,
                         cudaMemcpyDeviceToHost));
 
   checkErr(cudaFree(d_img));
