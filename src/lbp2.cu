@@ -81,6 +81,8 @@ __global__ void compute_histograms_by_tiles_opti(uchar* data,
                                             char* hists,
                                             size_t h_pitch)
 {
+  __shared__ unsigned local_h[256];
+
   // input  data[... + 1] = texton
   // output data[... + 0] = histograms (in each tile)
 
@@ -98,14 +100,17 @@ __global__ void compute_histograms_by_tiles_opti(uchar* data,
 
   unsigned nb_tiles_x = width / 16;
 
-  unsigned* h = (unsigned *)(hists + (y_tile * nb_tiles_x + x_tile) * h_pitch);
 
-  h[threadIdx.y * nb_tiles_x + threadIdx.x] = 0;
-
+  local_h[threadIdx.y * tile_dim + threadIdx.x] = 0;
   __syncthreads();
 
   uchar texton = data[(y_begin + threadIdx.y) * pitch + (x_begin + threadIdx.x) * 3 + 1];
-  atomicAdd(&h[texton], 1);
+  atomicAdd(&local_h[texton], 1);
+  __syncthreads();
+
+  unsigned* h = (unsigned *)(hists + (y_tile * nb_tiles_x + x_tile) * h_pitch);
+  h[threadIdx.y * tile_dim+ threadIdx.x] =
+    local_h[threadIdx.y * tile_dim + threadIdx.x];
 }
 
 unsigned * extract_feature_vector_v1(uchar* data, unsigned width, unsigned height)
