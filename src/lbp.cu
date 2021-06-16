@@ -62,6 +62,8 @@ __global__ void compare_neighbors(uchar* data,
 
   (*res) = 0;
 
+
+
 #pragma unroll
   for (size_t j = 0; j < 3; ++j)
     for (size_t i = 0; i < 3; ++i)

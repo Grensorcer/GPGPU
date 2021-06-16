@@ -19,3 +19,7 @@ Data should be placed in *data/*, which is ignored by git.
   in a csv (one by image) in a `results-\*` folder.
 
 * Then you can use `visu_benchmark.ipynb` to visualize them.
+
+# Results
+
+  * gpu1: naive version, broken bench

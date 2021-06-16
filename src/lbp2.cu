@@ -84,31 +84,28 @@ __global__ void compute_histograms_by_tiles_opti(uchar* data,
   // input  data[... + 1] = texton
   // output data[... + 0] = histograms (in each tile)
 
-  size_t x_tile = blockDim.x * blockIdx.x;
-  size_t y_tile = blockDim.y * blockIdx.y;
+  size_t x_tile = blockIdx.x;
+  size_t y_tile = blockIdx.y;
   size_t x_begin = x_tile * tile_dim;
   size_t y_begin = y_tile * tile_dim;
 
   if (x_begin >= width || y_begin >= height)
     return;
 
+
   //size_t x_end = x_begin + tile_dim;
-  size_t y_end = y_begin + tile_dim;
+  //size_t y_end = y_begin + tile_dim;
 
   unsigned nb_tiles_x = width / 16;
 
   unsigned* h = (unsigned *)(hists + (y_tile * nb_tiles_x + x_tile) * h_pitch);
 
-  for (unsigned i = 0; i < 256; i++)
-    h[i] = 0;
+  h[threadIdx.y * nb_tiles_x + threadIdx.x] = 0;
 
   __syncthreads();
 
-  for (size_t y = y_begin; y < y_end && y < height; y += 2)
-    {
-      uchar texton = data[(y + threadIdx.y) * pitch + threadIdx.x * 3 + 1];
-      atomicAdd(&h[texton], 1);
-    }
+  uchar texton = data[(y_begin + threadIdx.y) * pitch + (x_begin + threadIdx.x) * 3 + 1];
+  atomicAdd(&h[texton], 1);
 }
 
 unsigned * extract_feature_vector_v1(uchar* data, unsigned width, unsigned height)
@@ -142,6 +139,8 @@ unsigned * extract_feature_vector_v1(uchar* data, unsigned width, unsigned heigh
 
   w = std::ceil((float)width  / 16);
   h = std::ceil((float)height / 16);
+  dimGrid = dim3(w, h);
+  dimBlock = dim3(16, 16);
 
   unsigned nb_tiles_x = width / 16;
   unsigned nb_tiles_y = height / 16;
@@ -151,7 +150,7 @@ unsigned * extract_feature_vector_v1(uchar* data, unsigned width, unsigned heigh
   checkErr(cudaMallocPitch(&hists, &h_pitch, 256 * sizeof(unsigned), nb_tiles_x
         * nb_tiles_y));
 
-  dimGrid = dim3(w, h);
+  Log::dbg(width, ' ', height);
   Log::dbg("compute_histograms_by_tiles(): dimGrid: ", w, ' ', h);
   compute_histograms_by_tiles_opti<<<dimGrid, dimBlock>>>(d_img, width, height,
       pitch, 16, hists, h_pitch);
@@ -159,12 +158,6 @@ unsigned * extract_feature_vector_v1(uchar* data, unsigned width, unsigned heigh
   checkKernel();
   cudaDeviceSynchronize();
 
-/*
-  checkErr(cudaMemcpy2D(data, width * 3,
-                        d_img, pitch,
-                        width * 3, height,
-                        cudaMemcpyDeviceToHost));
-*/
 #if defined(DEBUG)
   // Only keep the texton
   for (size_t y = 0; y < height; ++y)
@@ -173,6 +166,12 @@ unsigned * extract_feature_vector_v1(uchar* data, unsigned width, unsigned heigh
       data[(y * width + x) * 3 + 0] = 0;
       data[(y * width + x) * 3 + 2] = 0;
     }
+
+  checkErr(cudaMemcpy2D(data, width * 3,
+                        d_img, pitch,
+                        width * 3, height,
+                        cudaMemcpyDeviceToHost));
+
 #endif
 
   unsigned * h_hists = (unsigned *)malloc(256 * nb_tiles_x
