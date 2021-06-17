@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "utils.hh"
 
 #if defined(DEBUG)
 
@@ -32,7 +33,7 @@
 #endif
 
 // calculate the Euclidean distance between two vectors
-__device__ float euclidean_distance(float *vect1, float *vect2, int len_vect){
+__device__ float euclidean_distance(float *vect1, rtype vect2, int len_vect){
 	float distance = 0.0;
 	for (int i = 0; i < len_vect; i++) 
 		distance += (vect1[i] - vect2[i]) * (vect1[i] - vect2[i]);
@@ -40,24 +41,25 @@ __device__ float euclidean_distance(float *vect1, float *vect2, int len_vect){
 }
 
 // Locate the most similar neighbors
-__global__ void get_neighbor(float *clusters, int cluster_pitch, int len_clusters, int len_vect, float *patches, int patches_pitch) {
+__global__ void get_neighbor(float *clusters, size_t cluster_pitch, size_t len_clusters, size_t len_vect,
+                            rtype patches, size_t patches_pitch, size_t n_patches, int *neighbor) {
     size_t x = blockDim.x * blockIdx.x + threadIdx.x;
+    if (x >= n_patches || x >= 11520)
+        return;
 
-    float* distance;
-
-    checkErr(cudaMalloc(&distance, len_clusters * sizeof(float)));
-
+    float distance_mini = -1;
+    int mini = -1;
 	for (int i = 0; i < len_clusters; i++) {
 		float dist = euclidean_distance(clusters + i * cluster_pitch, patches + x * patches_pitch, len_vect);
-        distance[i] = dist;
-    }
-    int mini = 0;
-    for (int i = 0; i < len_clusters; i++)
-        if (distance[i] < distance[mini] )
+        if (dist < distance_mini || distance_mini == -1) {
+            distance_mini = dist;
             mini = i;
-
-    checkErr(cudaFree(distance));
-    // return mini;
+        }
+    }
+    neighbor[x] = mini;
+    /*if (threadIdx.x==0)
+        printf("2ND x = %lu ### bon cluster_pitch = %lu len_clusters = %lu len_vect = %lu patches_pitch = %lu n_patches = %lu\n",
+            x, cluster_pitch, len_clusters, len_vect, patches_pitch, n_patches);*/
 }
 
 std::string readFileIntoString(const std::string& path) {
@@ -104,10 +106,18 @@ __global__ void check_clusters(float* clusters) {
 }
 */
 
+__global__ void check_neighbor(int* neighbor) {
+    printf("START\n");
+    for (int i = 0; i < 10; i++) {
+        printf("%d \n", neighbor[i]);
+    }
+}
+
 void step_2(rtype hists_cpu, int nb_tiles_x, int nb_tiles_y) {
-    int n_clusters = 16;
-    int cluster_size = 256;
-    int hists_size = nb_tiles_x * nb_tiles_y;
+    size_t n_clusters = 16;
+    size_t cluster_size = 256;
+    size_t hists_size = nb_tiles_x * nb_tiles_y;
+    std::cout << nb_tiles_x<<" " << nb_tiles_y<<" " << hists_size << std::endl;
 
     // Lecture du fichier des clusters et stockage RAM
     float* clusters_cpu = read_cluster_csv(n_clusters, cluster_size);
@@ -129,27 +139,33 @@ void step_2(rtype hists_cpu, int nb_tiles_x, int nb_tiles_y) {
     rtype hists;
     size_t h_pitch;
     
-    checkErr(cudaMallocPitch(&hists, &h_pitch, cluster_size * sizeof(hists_cpu[0]), hists_size));
+    checkErr(cudaMallocPitch(&hists, &h_pitch, cluster_size * sizeof(unsigned short), hists_size));
 
     checkErr(cudaMemcpy2D(hists, h_pitch,
-                            hists_cpu, cluster_size * sizeof(hists_cpu[0]),
-                            cluster_size * sizeof(hists_cpu[0]), hists_size,
+                            hists_cpu, cluster_size * sizeof(unsigned short),
+                            cluster_size * sizeof(unsigned short), hists_size,
                             cudaMemcpyHostToDevice));
 
     
     // Get Neighbors
     
-    int bsize = 32;
-    int w     = std::ceil((float)nb_tiles_x / bsize);
-    int h     = std::ceil((float)nb_tiles_y / bsize);
-
-    dim3 dimBlock(bsize, bsize);
-    dim3 dimGrid(w, h);
-
-    get_neighbor<<<dimGrid, dimBlock>>>(float *clusters, int cluster_pitch, int len_clusters, int len_vect, float *patches, int patches_pitch)
+    size_t bsize = 256;
+    size_t w     = std::ceil((float)hists_size / bsize);
+    std::cout << "w:" << w << std::endl;
 
     // On renvoie comment la data ? On fait un nouveau tableau ou pas ? On stocke dans l'image ? Quel channel ?
+    // Version simple
+    int *neighbor;
+    checkErr(cudaMalloc(&neighbor, hists_size * sizeof(int)));
 
+    std::cout <<"c_pitch="<< c_pitch<<" n_clusters=" << n_clusters<<" cluster_size=" << cluster_size << " h_pitch=" << h_pitch << " hists_size="<<hists_size << std::endl;
+    get_neighbor<<<w, bsize>>>(clusters, c_pitch, n_clusters, cluster_size, hists, h_pitch, hists_size, neighbor);
+
+    checkKernel();
+    cudaDeviceSynchronize();
+
+    check_neighbor<<<1, 1>>>(neighbor);
+    
     // On attribue une couleur à chaque cluster
     // On recontruit l'image
 
