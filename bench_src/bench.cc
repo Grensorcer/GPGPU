@@ -114,8 +114,28 @@ static void v1(benchmark::State& s)
   s.counters["pix"] = img.rows * img.cols; 
 }
 
+static void v2(benchmark::State& s)
+{
+  Image img;
+
+  for (auto _ : s)
+  {
+    img = Image(data[s.range(0)]);
+    benchmark::ClobberMemory();
+    unsigned *res;
+    benchmark::DoNotOptimize(res = extract_feature_vector_v2(img.data, img.cols, img.rows));
+    free(res);
+
+    benchmark::DoNotOptimize(img);
+  }
+
+  s.counters["rows"] = img.rows; 
+  s.counters["cols"] = img.cols; 
+  s.counters["pix"] = img.rows * img.cols; 
+}
 
 BENCHMARK(warmup)->DenseRange(0, data.size() - 1);
 BENCHMARK(naive)->DenseRange(0, data.size() - 1);
 BENCHMARK(v1)->DenseRange(0, data.size() - 1);
+BENCHMARK(v2)->DenseRange(0, data.size() - 1);
 BENCHMARK_MAIN();

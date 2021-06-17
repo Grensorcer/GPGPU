@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
     rtype hists = extract_feature_vector_naive(img.data, img.cols, img.rows);
 #else
     typedef unsigned * rtype;
-    rtype hists = extract_feature_vector_v1(img.data, img.cols, img.rows);
+    rtype hists = extract_feature_vector_v2(img.data, img.cols, img.rows);
 #endif
 
     if (display_image)

@@ -193,6 +193,7 @@ unsigned short* extract_feature_vector_naive(uchar* data, unsigned width, unsign
                         cudaMemcpyDeviceToHost));
 
   checkErr(cudaFree(d_img));
+  checkErr(cudaFree(hists));
 
   return h_hists;
 }
