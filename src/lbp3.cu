@@ -109,12 +109,12 @@ __global__ void compute_histograms_by_tiles_v2(uchar* data,
   atomicAdd(&local_h[texton], 1);
   __syncthreads();
 
-  unsigned* h = (unsigned *)(hists + (y_tile * nb_tiles_x + x_tile) * h_pitch);
+  short* h = (short*)(hists + (y_tile * nb_tiles_x + x_tile) * h_pitch);
   h[threadIdx.y * tile_dim+ threadIdx.x] =
     local_h[threadIdx.y * tile_dim + threadIdx.x];
 }
 
-unsigned * extract_feature_vector_v2(uchar* data, unsigned width, unsigned height)
+short* extract_feature_vector_v2(uchar* data, unsigned width, unsigned height)
 {
   uchar* d_img;
   size_t pitch;
@@ -140,18 +140,17 @@ unsigned * extract_feature_vector_v2(uchar* data, unsigned width, unsigned heigh
 
   char* hists;
   size_t h_pitch;
-  checkErr(cudaMallocPitch(&hists, &h_pitch, 256 * sizeof(unsigned), nb_tiles_x
+  checkErr(cudaMallocPitch(&hists, &h_pitch, 256 * sizeof(short), nb_tiles_x
         * nb_tiles_y));
 
-  Log::dbg(width, ' ', height);
   Log::dbg("compute_histograms_by_tiles(): dimGrid: ", w, ' ', h);
 
   cudaStream_t stream[4];
 
   size_t height_of_pipeline = nb_tiles_y / 4 * 16;
 
-  unsigned * h_hists = (unsigned *)malloc(256 * nb_tiles_x
-      * nb_tiles_y * sizeof(unsigned));
+  short* h_hists = (short*)malloc(256 * nb_tiles_x
+      * nb_tiles_y * sizeof(short));
 
 
   auto pipeline = [&](unsigned id)
@@ -170,8 +169,6 @@ unsigned * extract_feature_vector_v2(uchar* data, unsigned width, unsigned heigh
     else if (id == 3)
       --height_to_copy;
 
-    Log::dbg(begin_data_dst_copy - d_img, ' ', begin_data - data);
-
     checkErr(cudaMemcpy2DAsync(begin_data_dst_copy, pitch,
                         begin_data, 3 * width * sizeof(uchar),
                         3 * width * sizeof(uchar), height_to_copy,
@@ -185,16 +182,21 @@ unsigned * extract_feature_vector_v2(uchar* data, unsigned width, unsigned heigh
     compare_neighbors_v2<<<dimGrid, dimBlock, 0, stream[id]>>>(begin_d_img, width, height_of_pipeline, pitch);
     checkErr(cudaStreamSynchronize(stream[id]));
 
-    unsigned* begin_hist = (unsigned*)(hists + (id * height_of_pipeline / 16 * nb_tiles_x) * h_pitch);
+    short* begin_hist = (short*)(hists + (id * height_of_pipeline / 16) * nb_tiles_x * h_pitch);
     compute_histograms_by_tiles_v2<<<dimGrid, dimBlock, 0, stream[id]>>>(begin_d_img, width, height_of_pipeline,
                                                           pitch, 16, (char*)begin_hist, h_pitch);
-
     checkErr(cudaStreamSynchronize(stream[id]));
 
-    checkErr(cudaMemcpy2DAsync(h_hists, 256 * sizeof(unsigned),
-                        hists, h_pitch,
-                        256*sizeof(unsigned), nb_tiles_x * height_of_pipeline / 16,
-                        cudaMemcpyDeviceToHost, stream[id]));
+    short* begin_h_hist = (short*)(h_hists + (id * nb_tiles_y / 4) * nb_tiles_x * 256);
+
+    Log::dbg(nb_tiles_x * (id * nb_tiles_y / 4));
+
+    checkErr(cudaMemcpy2D(begin_h_hist, 256 * sizeof(short),
+                        begin_hist, h_pitch,
+                        256*sizeof(short), nb_tiles_x * (nb_tiles_y / 4),
+                        cudaMemcpyDeviceToHost));
+
+
   };
 
   std::thread ts[4];
@@ -209,6 +211,8 @@ unsigned * extract_feature_vector_v2(uchar* data, unsigned width, unsigned heigh
     ts[i].join();
     checkErr(cudaStreamDestroy(stream[i]));
   }
+
+
 
 #if defined(DEBUG)
   // Only keep the texton

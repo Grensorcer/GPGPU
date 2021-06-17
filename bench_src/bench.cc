@@ -122,7 +122,7 @@ static void v2(benchmark::State& s)
   {
     img = Image(data[s.range(0)]);
     benchmark::ClobberMemory();
-    unsigned *res;
+    short *res;
     benchmark::DoNotOptimize(res = extract_feature_vector_v2(img.data, img.cols, img.rows));
     free(res);
 
