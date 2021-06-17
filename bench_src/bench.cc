@@ -115,7 +115,7 @@ static void v1(benchmark::State& s)
 }
 
 
-//BENCHMARK(warmup)->DenseRange(0, data.size() - 1);
-//BENCHMARK(naive)->DenseRange(0, data.size() - 1);
+BENCHMARK(warmup)->DenseRange(0, data.size() - 1);
+BENCHMARK(naive)->DenseRange(0, data.size() - 1);
 BENCHMARK(v1)->DenseRange(0, data.size() - 1);
 BENCHMARK_MAIN();

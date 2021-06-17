@@ -1,0 +1,414 @@
+-- LLVM FileCheck Found: /usr/bin/FileCheck
+-- git version: v0.0.0-dirty normalized to 0.0.0
+-- Version: 1.5.4
+-- Performing Test HAVE_STD_REGEX -- success
+-- Performing Test HAVE_GNU_POSIX_REGEX -- failed to compile
+-- Performing Test HAVE_POSIX_REGEX -- success
+-- Performing Test HAVE_STEADY_CLOCK -- success
+-- Configuring done
+CMake Warning (dev) in CMakeLists.txt:
+  Policy CMP0104 is not set: CMAKE_CUDA_ARCHITECTURES now detected for NVCC,
+  empty CUDA_ARCHITECTURES not allowed.  Run "cmake --help-policy CMP0104"
+  for policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  CUDA_ARCHITECTURES is empty for target "gpuproc".
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) in CMakeLists.txt:
+  Policy CMP0104 is not set: CMAKE_CUDA_ARCHITECTURES now detected for NVCC,
+  empty CUDA_ARCHITECTURES not allowed.  Run "cmake --help-policy CMP0104"
+  for policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  CUDA_ARCHITECTURES is empty for target "gpuproc".
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) in CMakeLists.txt:
+  Policy CMP0104 is not set: CMAKE_CUDA_ARCHITECTURES now detected for NVCC,
+  empty CUDA_ARCHITECTURES not allowed.  Run "cmake --help-policy CMP0104"
+  for policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  CUDA_ARCHITECTURES is empty for target "gpuproc".
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Generating done
+-- Build files have been written to: /home/jerome.dubois/afs/GPGPU/release
+Consolidate compiler generated dependencies of target gpuproc
+[ 12%] Built target gpuproc
+Consolidate compiler generated dependencies of target lbp
+[ 19%] Built target lbp
+Consolidate compiler generated dependencies of target benchmark
+[ 87%] Built target benchmark
+Consolidate compiler generated dependencies of target benchmark_main
+Consolidate compiler generated dependencies of target bench
+[ 93%] Built target benchmark_main
+[100%] Built target bench
+processor	: 0
+vendor_id	: AuthenticAMD
+cpu family	: 15
+model		: 6
+model name	: Common KVM processor
+stepping	: 1
+microcode	: 0x1000065
+cpu MHz		: 2295.684
+cache size	: 512 KB
+physical id	: 0
+siblings	: 1
+core id		: 0
+cpu cores	: 1
+apicid		: 0
+initial apicid	: 0
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx lm rep_good nopl cpuid extd_apicid tsc_known_freq pni cx16 x2apic hypervisor 3dnowprefetch vmmcall
+bugs		: fxsave_leak sysret_ss_attrs null_seg swapgs_fence spectre_v1 spectre_v2
+bogomips	: 4591.36
+TLB size	: 1024 4K pages
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 1
+vendor_id	: AuthenticAMD
+cpu family	: 15
+model		: 6
+model name	: Common KVM processor
+stepping	: 1
+microcode	: 0x1000065
+cpu MHz		: 2295.684
+cache size	: 512 KB
+physical id	: 1
+siblings	: 1
+core id		: 0
+cpu cores	: 1
+apicid		: 1
+initial apicid	: 1
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx lm rep_good nopl cpuid extd_apicid tsc_known_freq pni cx16 x2apic hypervisor 3dnowprefetch vmmcall
+bugs		: fxsave_leak sysret_ss_attrs null_seg swapgs_fence spectre_v1 spectre_v2
+bogomips	: 4591.36
+TLB size	: 1024 4K pages
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 2
+vendor_id	: AuthenticAMD
+cpu family	: 15
+model		: 6
+model name	: Common KVM processor
+stepping	: 1
+microcode	: 0x1000065
+cpu MHz		: 2295.684
+cache size	: 512 KB
+physical id	: 2
+siblings	: 1
+core id		: 0
+cpu cores	: 1
+apicid		: 2
+initial apicid	: 2
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx lm rep_good nopl cpuid extd_apicid tsc_known_freq pni cx16 x2apic hypervisor 3dnowprefetch vmmcall
+bugs		: fxsave_leak sysret_ss_attrs null_seg swapgs_fence spectre_v1 spectre_v2
+bogomips	: 4591.36
+TLB size	: 1024 4K pages
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 3
+vendor_id	: AuthenticAMD
+cpu family	: 15
+model		: 6
+model name	: Common KVM processor
+stepping	: 1
+microcode	: 0x1000065
+cpu MHz		: 2295.684
+cache size	: 512 KB
+physical id	: 3
+siblings	: 1
+core id		: 0
+cpu cores	: 1
+apicid		: 3
+initial apicid	: 3
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx lm rep_good nopl cpuid extd_apicid tsc_known_freq pni cx16 x2apic hypervisor 3dnowprefetch vmmcall
+bugs		: fxsave_leak sysret_ss_attrs null_seg swapgs_fence spectre_v1 spectre_v2
+bogomips	: 4591.36
+TLB size	: 1024 4K pages
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 4
+vendor_id	: AuthenticAMD
+cpu family	: 15
+model		: 6
+model name	: Common KVM processor
+stepping	: 1
+microcode	: 0x1000065
+cpu MHz		: 2295.684
+cache size	: 512 KB
+physical id	: 4
+siblings	: 1
+core id		: 0
+cpu cores	: 1
+apicid		: 4
+initial apicid	: 4
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx lm rep_good nopl cpuid extd_apicid tsc_known_freq pni cx16 x2apic hypervisor 3dnowprefetch vmmcall
+bugs		: fxsave_leak sysret_ss_attrs null_seg swapgs_fence spectre_v1 spectre_v2
+bogomips	: 4591.36
+TLB size	: 1024 4K pages
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 5
+vendor_id	: AuthenticAMD
+cpu family	: 15
+model		: 6
+model name	: Common KVM processor
+stepping	: 1
+microcode	: 0x1000065
+cpu MHz		: 2295.684
+cache size	: 512 KB
+physical id	: 5
+siblings	: 1
+core id		: 0
+cpu cores	: 1
+apicid		: 5
+initial apicid	: 5
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx lm rep_good nopl cpuid extd_apicid tsc_known_freq pni cx16 x2apic hypervisor 3dnowprefetch vmmcall
+bugs		: fxsave_leak sysret_ss_attrs null_seg swapgs_fence spectre_v1 spectre_v2
+bogomips	: 4591.36
+TLB size	: 1024 4K pages
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 6
+vendor_id	: AuthenticAMD
+cpu family	: 15
+model		: 6
+model name	: Common KVM processor
+stepping	: 1
+microcode	: 0x1000065
+cpu MHz		: 2295.684
+cache size	: 512 KB
+physical id	: 6
+siblings	: 1
+core id		: 0
+cpu cores	: 1
+apicid		: 6
+initial apicid	: 6
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx lm rep_good nopl cpuid extd_apicid tsc_known_freq pni cx16 x2apic hypervisor 3dnowprefetch vmmcall
+bugs		: fxsave_leak sysret_ss_attrs null_seg swapgs_fence spectre_v1 spectre_v2
+bogomips	: 4591.36
+TLB size	: 1024 4K pages
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 7
+vendor_id	: AuthenticAMD
+cpu family	: 15
+model		: 6
+model name	: Common KVM processor
+stepping	: 1
+microcode	: 0x1000065
+cpu MHz		: 2295.684
+cache size	: 512 KB
+physical id	: 7
+siblings	: 1
+core id		: 0
+cpu cores	: 1
+apicid		: 7
+initial apicid	: 7
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx lm rep_good nopl cpuid extd_apicid tsc_known_freq pni cx16 x2apic hypervisor 3dnowprefetch vmmcall
+bugs		: fxsave_leak sysret_ss_attrs null_seg swapgs_fence spectre_v1 spectre_v2
+bogomips	: 4591.36
+TLB size	: 1024 4K pages
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+Thu Jun 17 14:50:47 2021       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 465.31       Driver Version: 465.31       CUDA Version: 11.3     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|                               |                      |               MIG M. |
+|===============================+======================+======================|
+|   0  NVIDIA GeForce ...  Off  | 00000000:00:04.0 Off |                  N/A |
+| 30%   34C    P0     1W /  75W |      0MiB /  3911MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                                  |
+|  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
+|        ID   ID                                                   Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
+Run bench with  data/barcode-00-01.jpg
+2021-06-17T14:50:48+02:00
+Running ./release/bench
+Run on (8 X 2295.68 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB (x8)
+  L1 Instruction 64 KiB (x8)
+  L2 Unified 512 KiB (x8)
+  L3 Unified 16384 KiB (x8)
+Load Average: 0.22, 0.28, 0.34
+***WARNING*** Library was built as DEBUG. Timings may be affected.
+Run bench with  data/barcode-00-02.jpg
+2021-06-17T14:50:50+02:00
+Running ./release/bench
+Run on (8 X 2295.68 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB (x8)
+  L1 Instruction 64 KiB (x8)
+  L2 Unified 512 KiB (x8)
+  L3 Unified 16384 KiB (x8)
+Load Average: 0.22, 0.28, 0.34
+***WARNING*** Library was built as DEBUG. Timings may be affected.
+Run bench with  data/barcode-00-03.jpg
+2021-06-17T14:50:53+02:00
+Running ./release/bench
+Run on (8 X 2295.68 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB (x8)
+  L1 Instruction 64 KiB (x8)
+  L2 Unified 512 KiB (x8)
+  L3 Unified 16384 KiB (x8)
+Load Average: 0.29, 0.29, 0.34
+***WARNING*** Library was built as DEBUG. Timings may be affected.
+Run bench with  data/barcode-01-01.jpg
+[mjpeg @ 0x564d884f9b80] unable to decode APP fields: Invalid data found when processing input
+[mjpeg @ 0x564d884f6980] unable to decode APP fields: Invalid data found when processing input
+2021-06-17T14:50:56+02:00
+Running ./release/bench
+Run on (8 X 2295.68 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB (x8)
+  L1 Instruction 64 KiB (x8)
+  L2 Unified 512 KiB (x8)
+  L3 Unified 16384 KiB (x8)
+Load Average: 0.29, 0.29, 0.34
+***WARNING*** Library was built as DEBUG. Timings may be affected.
+Run bench with  data/barcode-DogecoinMiners-01.jpg
+2021-06-17T14:51:00+02:00
+Running ./release/bench
+Run on (8 X 2295.68 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB (x8)
+  L1 Instruction 64 KiB (x8)
+  L2 Unified 512 KiB (x8)
+  L3 Unified 16384 KiB (x8)
+Load Average: 0.34, 0.30, 0.35
+***WARNING*** Library was built as DEBUG. Timings may be affected.
+Run bench with  data/barcode-DogecoinMiners-02.jpg
+2021-06-17T14:51:03+02:00
+Running ./release/bench
+Run on (8 X 2295.68 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB (x8)
+  L1 Instruction 64 KiB (x8)
+  L2 Unified 512 KiB (x8)
+  L3 Unified 16384 KiB (x8)
+Load Average: 0.40, 0.31, 0.35
+***WARNING*** Library was built as DEBUG. Timings may be affected.
+Run bench with  data/barcode-DogecoinMiners-03.jpg
+2021-06-17T14:51:07+02:00
+Running ./release/bench
+Run on (8 X 2295.68 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB (x8)
+  L1 Instruction 64 KiB (x8)
+  L2 Unified 512 KiB (x8)
+  L3 Unified 16384 KiB (x8)
+Load Average: 0.44, 0.32, 0.35
+***WARNING*** Library was built as DEBUG. Timings may be affected.
+Run bench with  data/barcode-DogecoinMiners-04.jpg
+2021-06-17T14:51:10+02:00
+Running ./release/bench
+Run on (8 X 2295.68 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB (x8)
+  L1 Instruction 64 KiB (x8)
+  L2 Unified 512 KiB (x8)
+  L3 Unified 16384 KiB (x8)
+Load Average: 0.44, 0.32, 0.35
+***WARNING*** Library was built as DEBUG. Timings may be affected.
+Run bench with  data/barcode-DogecoinMiners-05.jpg
+2021-06-17T14:51:13+02:00
+Running ./release/bench
+Run on (8 X 2295.68 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB (x8)
+  L1 Instruction 64 KiB (x8)
+  L2 Unified 512 KiB (x8)
+  L3 Unified 16384 KiB (x8)
+Load Average: 0.49, 0.33, 0.36
+***WARNING*** Library was built as DEBUG. Timings may be affected.
+Run bench with  data/TotoLeGPU1.jpg
+2021-06-17T14:51:17+02:00
+Running ./release/bench
+Run on (8 X 2295.68 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB (x8)
+  L1 Instruction 64 KiB (x8)
+  L2 Unified 512 KiB (x8)
+  L3 Unified 16384 KiB (x8)
+Load Average: 0.53, 0.35, 0.36
+***WARNING*** Library was built as DEBUG. Timings may be affected.
+Run bench with  data/TotoLeGPU2.jpg
+2021-06-17T14:51:20+02:00
+Running ./release/bench
+Run on (8 X 2295.68 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB (x8)
+  L1 Instruction 64 KiB (x8)
+  L2 Unified 512 KiB (x8)
+  L3 Unified 16384 KiB (x8)
+Load Average: 0.53, 0.35, 0.36
+***WARNING*** Library was built as DEBUG. Timings may be affected.

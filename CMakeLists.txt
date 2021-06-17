@@ -59,3 +59,20 @@ target_link_libraries(bench gpuproc
   opencv_highgui
   benchmark
 )
+
+if (NOT CMAKE_BUILD_TYPE STREQUAL "Release")
+	message("                                 ")
+	message("             ^                   ")
+	message("            / \\                  ")
+	message("           / | \\                 ")
+	message("          /  |  \\                ")
+	message("         /   .   \\               ")
+	message("        /_________\\              ")
+	message("                                 ")
+ 	message("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+	message("@ Warning: build in debug mode, @")
+	message("@ benchmarks will be inaccurate @")
+ 	message("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+endif()
+
+
