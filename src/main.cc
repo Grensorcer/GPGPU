@@ -6,6 +6,7 @@
 #include "utils.hh"
 
 #include "lbp.hh"
+#include "nn.hh"
 
 #include <string>
 #include <fstream>
@@ -37,6 +38,9 @@ int main(int argc, char* argv[])
   {
     Image img(frame);
 
+    unsigned nb_tiles_x = img.cols / 16;
+    unsigned nb_tiles_y = img.rows / 16;
+
 #if defined(naive)
     typedef unsigned short* rtype;
     rtype hists = extract_feature_vector_naive(img.data, img.cols, img.rows);
@@ -44,6 +48,13 @@ int main(int argc, char* argv[])
     typedef unsigned * rtype;
     rtype hists = extract_feature_vector_v1(img.data, img.cols, img.rows);
 #endif
+
+
+
+    // Step 2
+    step_2(hists, nb_tiles_x, nb_tiles_y);
+
+
 
     if (display_image)
     {
@@ -57,9 +68,6 @@ int main(int argc, char* argv[])
     {
       std::fstream f("out.csv", std::fstream::out);
       f << "val,\n";
-
-      unsigned nb_tiles_x = img.cols / 16;
-      unsigned nb_tiles_y = img.rows / 16;
 
       for (unsigned i = 0; i < nb_tiles_x * nb_tiles_y; ++i)
       {
