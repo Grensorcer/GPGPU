@@ -115,7 +115,7 @@ __global__ void compute_histograms_by_tiles_v2(uchar* data,
 }
 
 short* extract_feature_vector_v2(uchar* data, unsigned width, unsigned height,
-    short** r_feature_vector, size_t* r_pitch)
+    short** r_feature_vector, size_t* r_pitch, uchar** gpu_img, size_t* img_pitch)
 {
   uchar* d_img;
   size_t pitch;
@@ -235,6 +235,8 @@ short* extract_feature_vector_v2(uchar* data, unsigned width, unsigned height,
   {
     *r_feature_vector = (short*)hists;
     *r_pitch = h_pitch;
+    *gpu_img = d_img;
+    *img_pitch = pitch;
   }
   else
     checkErr(cudaFree(hists));
