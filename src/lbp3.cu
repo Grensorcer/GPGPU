@@ -114,7 +114,8 @@ __global__ void compute_histograms_by_tiles_v2(uchar* data,
     local_h[threadIdx.y * tile_dim + threadIdx.x];
 }
 
-short* extract_feature_vector_v2(uchar* data, unsigned width, unsigned height)
+short* extract_feature_vector_v2(uchar* data, unsigned width, unsigned height,
+    short** r_feature_vector, size_t* r_pitch)
 {
   uchar* d_img;
   size_t pitch;
@@ -229,7 +230,14 @@ short* extract_feature_vector_v2(uchar* data, unsigned width, unsigned height)
 #endif
 
   checkErr(cudaFree(d_img));
-  checkErr(cudaFree(hists));
+
+  if (r_feature_vector)
+  {
+    *r_feature_vector = (short*)hists;
+    *r_pitch = h_pitch;
+  }
+  else
+    checkErr(cudaFree(hists));
 
   return h_hists;
 }
