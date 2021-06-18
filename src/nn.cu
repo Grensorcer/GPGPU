@@ -41,16 +41,16 @@ __device__ float euclidean_distance(float *vect1, rtype vect2, int len_vect){
 }
 
 // Locate the most similar neighbors
-__global__ void get_neighbor(float *clusters, size_t cluster_pitch, size_t len_clusters, size_t len_vect,
-                            rtype patches, size_t patches_pitch, size_t n_patches, int *neighbor) {
+__global__ void get_neighbor(void *clusters, size_t cluster_pitch, size_t len_clusters, size_t len_vect,
+                            void *patches, size_t patches_pitch, size_t n_patches, int *neighbor) {
     size_t x = blockDim.x * blockIdx.x + threadIdx.x;
-    if (x >= n_patches || x >= 11520)
+    if (x >= n_patches)
         return;
 
     float distance_mini = -1;
     int mini = -1;
 	for (int i = 0; i < len_clusters; i++) {
-		float dist = euclidean_distance(clusters + i * cluster_pitch, patches + x * patches_pitch, len_vect);
+		float dist = euclidean_distance((float*) ((char*) clusters + i * cluster_pitch), (rtype) ((char*) patches + x * patches_pitch), len_vect);
         if (dist < distance_mini || distance_mini == -1) {
             distance_mini = dist;
             mini = i;
