@@ -6,4 +6,4 @@
     typedef unsigned * rtype;
 #endif
 
-void step_2(rtype hists_cpu, int nb_tiles_x, int nb_tiles_y);
+void step_2(rtype hists_cpu, uint8_t* image, size_t width, size_t height);

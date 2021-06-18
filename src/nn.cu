@@ -5,6 +5,8 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <curand_kernel.h>
+
 #include "utils.hh"
 
 #if defined(DEBUG)
@@ -35,21 +37,21 @@
 // calculate the Euclidean distance between two vectors
 __device__ float euclidean_distance(float *vect1, rtype vect2, int len_vect){
 	float distance = 0.0;
-	for (int i = 0; i < len_vect; i++) 
+	for (size_t i = 0; i < len_vect; i++) 
 		distance += (vect1[i] - vect2[i]) * (vect1[i] - vect2[i]);
 	return distance;
 }
 
 // Locate the most similar neighbors
 __global__ void get_neighbor(void *clusters, size_t cluster_pitch, size_t len_clusters, size_t len_vect,
-                            void *patches, size_t patches_pitch, size_t n_patches, int *neighbor) {
+                            void *patches, size_t patches_pitch, size_t n_patches, uint8_t *neighbor) {
     size_t x = blockDim.x * blockIdx.x + threadIdx.x;
     if (x >= n_patches)
         return;
 
     float distance_mini = -1;
-    int mini = -1;
-	for (int i = 0; i < len_clusters; i++) {
+    uint8_t mini = 0;
+	for (size_t i = 0; i < len_clusters; i++) {
 		float dist = euclidean_distance((float*) ((char*) clusters + i * cluster_pitch), (rtype) ((char*) patches + x * patches_pitch), len_vect);
         if (dist < distance_mini || distance_mini == -1) {
             distance_mini = dist;
@@ -98,13 +100,26 @@ float* read_cluster_csv(int n_clusters, int cluster_size)
     return items;
 }
 
+__global__ void random_color(uint8_t* colors, size_t size) {
+    size_t x = blockDim.x * blockIdx.x + threadIdx.x;
+
+    if (x >= size)
+        return;
+    
+    curandStatePhilox4_32_10_t state;
+    curand_init(0, /* the seed controls the sequence of random values that are produced */
+                x, /* the sequence number is only important with multiple cores */
+                0, /* the offset is how much extra we advance in the sequence for each call, can be 0 */
+                &state);
+    colors[x] = curand(&state) % 256;
+}
+
 /*
 __global__ void check_clusters(float* clusters) {
     for (int i = 0; i < 10; i++) {
         printf("%f \n", clusters[i]);
     }
 }
-*/
 
 __global__ void check_neighbor(int* neighbor) {
     printf("START\n");
@@ -113,11 +128,40 @@ __global__ void check_neighbor(int* neighbor) {
     }
 }
 
-void step_2(rtype hists_cpu, int nb_tiles_x, int nb_tiles_y) {
+__global__ void check_colors(uint8_t* colors) {
+    printf("START\n");
+    for (int i = 0; i < 10; i++) {
+        printf("%d \n", colors[i]);
+    }
+}
+*/
+__global__ void change_pixels(uint8_t* img, size_t pitch, size_t width, size_t height, uint8_t* colors, uint8_t* neighbor) {
+    size_t x = blockDim.x * blockIdx.x + threadIdx.x;
+    size_t y = blockDim.y * blockIdx.y + threadIdx.y;
+
+    if (x >= width ||y >= height)
+        return;
+    
+    uint8_t* pix = &img[y * pitch + x * 3];
+
+    size_t nb_tiles_x = width / 16;
+    size_t tile_x = x / 16;
+    size_t tile_y = y / 16;
+    size_t hist_index = tile_y * nb_tiles_x + tile_x;
+    uint8_t cluster_index = neighbor[hist_index];
+    uint8_t* color = colors + 3 * cluster_index;
+
+    for (size_t i = 0; i < 3; i++)
+        pix[i] = color[i];
+}
+
+void step_2(rtype hists_cpu, uint8_t* image, size_t width, size_t height) {
     size_t n_clusters = 16;
     size_t cluster_size = 256;
+
+    size_t nb_tiles_x = width / 16;
+    size_t nb_tiles_y = height / 16;
     size_t hists_size = nb_tiles_x * nb_tiles_y;
-    std::cout << nb_tiles_x<<" " << nb_tiles_y<<" " << hists_size << std::endl;
 
     // Lecture du fichier des clusters et stockage RAM
     float* clusters_cpu = read_cluster_csv(n_clusters, cluster_size);
@@ -149,26 +193,63 @@ void step_2(rtype hists_cpu, int nb_tiles_x, int nb_tiles_y) {
     
     // Get Neighbors
     
-    size_t bsize = 256;
+    size_t bsize = 32;
     size_t w     = std::ceil((float)hists_size / bsize);
-    std::cout << "w:" << w << std::endl;
 
     // On renvoie comment la data ? On fait un nouveau tableau ou pas ? On stocke dans l'image ? Quel channel ?
     // Version simple
-    int *neighbor;
-    checkErr(cudaMalloc(&neighbor, hists_size * sizeof(int)));
+    uint8_t* neighbor;
+    checkErr(cudaMalloc(&neighbor, hists_size * sizeof(uint8_t)));
 
-    std::cout <<"c_pitch="<< c_pitch<<" n_clusters=" << n_clusters<<" cluster_size=" << cluster_size << " h_pitch=" << h_pitch << " hists_size="<<hists_size << std::endl;
     get_neighbor<<<w, bsize>>>(clusters, c_pitch, n_clusters, cluster_size, hists, h_pitch, hists_size, neighbor);
 
     checkKernel();
     cudaDeviceSynchronize();
 
-    check_neighbor<<<1, 1>>>(neighbor);
+    //check_neighbor<<<1, 1>>>(neighbor);
     
     // On attribue une couleur à chaque cluster
+    uint8_t* colors;
+    checkErr(cudaMalloc(&colors, 3 * sizeof(uint8_t) * n_clusters));
+
+    w = std::ceil((float)3 * n_clusters / bsize);
+    random_color<<<w, bsize>>>(colors, 3 * n_clusters);
+
+    checkKernel();
+    cudaDeviceSynchronize();
+
     // On recontruit l'image
+    uint8_t* img;
+    size_t i_pitch;
+
+    checkErr(cudaMallocPitch(&img, &i_pitch, 3 * width * sizeof(uint8_t), height));
+
+    checkErr(cudaMemcpy2D(img, i_pitch,
+                            image, 3 * width * sizeof(uint8_t),
+                            3 * width * sizeof(uint8_t), height,
+                            cudaMemcpyHostToDevice));
+
+    
+    w     = std::ceil((float)width / bsize);
+    size_t h     = std::ceil((float)height / bsize);
+
+    dim3 dimBlock(bsize, bsize);
+    dim3 dimGrid(w, h);
+
+    change_pixels<<<dimGrid, dimBlock>>>(img, i_pitch, width, height, colors, neighbor);
+
+    checkKernel();
+    cudaDeviceSynchronize();
+
+    // On remets l'image en CPU
+    checkErr(cudaMemcpy2D(image, 3 * width * sizeof(uint8_t),
+                            img, i_pitch,
+                            3 * width * sizeof(uint8_t), height,
+                            cudaMemcpyDeviceToHost));
 
     checkErr(cudaFree(hists));
     checkErr(cudaFree(clusters));
+    checkErr(cudaFree(img));
+    checkErr(cudaFree(colors));
+    checkErr(cudaFree(neighbor));
 }

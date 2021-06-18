@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
 
 
     // Step 2
-    step_2(hists, nb_tiles_x, nb_tiles_y);
+    step_2(hists, img.data, img.cols, img.rows);
 
 
 
