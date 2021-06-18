@@ -22,4 +22,8 @@ Data should be placed in *data/*, which is ignored by git.
 
 # Results
 
-  * gpu1: naive version, broken bench
+  * Step 1:
+      * gpu1: naive version, broken bench
+      * gpuv1: first optimization
+      * very_optimized: second optimization, broken bench
+      * very_optimized_fixed: second optimization
