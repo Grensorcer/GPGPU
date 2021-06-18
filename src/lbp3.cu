@@ -121,20 +121,6 @@ short* extract_feature_vector_v2(uchar* data, unsigned width, unsigned height)
 
   checkErr(cudaMallocPitch(&d_img, &pitch, width * 3 * sizeof(uchar), height));
 
-  int bsize = 32;
-  int w     = std::ceil((float)width / bsize);
-  int h     = std::ceil((float)height / bsize);
-
-  dim3 dimBlock(bsize, bsize);
-  dim3 dimGrid(w, h);
-
-  Log::dbg("greyscale() + compare_neighbors(): dimGrid: ", w, ' ', h);
-
-  w = std::ceil((float)width  / 16);
-  h = std::ceil((float)height / 16);
-  dimGrid = dim3(w, h);
-  dimBlock = dim3(16, 16);
-
   unsigned nb_tiles_x = width / 16;
   unsigned nb_tiles_y = height / 16;
 
@@ -142,8 +128,6 @@ short* extract_feature_vector_v2(uchar* data, unsigned width, unsigned height)
   size_t h_pitch;
   checkErr(cudaMallocPitch(&hists, &h_pitch, 256 * sizeof(short), nb_tiles_x
         * nb_tiles_y));
-
-  Log::dbg("compute_histograms_by_tiles(): dimGrid: ", w, ' ', h);
 
   cudaStream_t stream[4];
 
@@ -176,11 +160,25 @@ short* extract_feature_vector_v2(uchar* data, unsigned width, unsigned height)
 
     uchar* begin_d_img = d_img + height_of_pipeline * id * pitch;
 
+    int bsize = 32;
+    int w     = std::ceil((float)width / bsize);
+    int h     = std::ceil((float)height / bsize);
+    dim3 dimBlock(bsize, bsize);
+    dim3 dimGrid(w, h);
+
+    Log::dbg("greyscale() + compare_neighbors(): dimGrid: ", w, ' ', h);
+
     greyscale_v2<<<dimGrid, dimBlock, 0, stream[id]>>>(begin_data_dst_copy, width, height_to_copy, pitch);
     checkErr(cudaStreamSynchronize(stream[id]));
 
     compare_neighbors_v2<<<dimGrid, dimBlock, 0, stream[id]>>>(begin_d_img, width, height_of_pipeline, pitch);
     checkErr(cudaStreamSynchronize(stream[id]));
+
+    w = std::ceil((float)width  / 16);
+    h = std::ceil(((float)height / 16) / 4);
+    dimGrid = dim3(w, h);
+    dimBlock = dim3(16, 16);
+    Log::dbg("compute_histograms_by_tiles(): dimGrid: ", w, ' ', h);
 
     short* begin_hist = (short*)(hists + (id * height_of_pipeline / 16) * nb_tiles_x * h_pitch);
     compute_histograms_by_tiles_v2<<<dimGrid, dimBlock, 0, stream[id]>>>(begin_d_img, width, height_of_pipeline,
