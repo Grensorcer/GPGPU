@@ -43,16 +43,43 @@ __device__ float euclidean_distance(float *vect1, rtype vect2, int len_vect){
 }
 
 // Locate the most similar neighbors
-__global__ void get_neighbor(void *clusters, size_t cluster_pitch, size_t len_clusters, size_t len_vect,
-                            void *patches, size_t patches_pitch, size_t n_patches, uint8_t *neighbor) {
+__global__ void get_neighbor(float *clusters, size_t cluster_pitch, size_t len_clusters, size_t len_vect,
+                            rtype patches, size_t patches_pitch, size_t n_patches, uint8_t *neighbor) {
     size_t x = blockDim.x * blockIdx.x + threadIdx.x;
+
     if (x >= n_patches)
         return;
 
     float distance_mini = -1;
     uint8_t mini = 0;
+
+    rtype patch = (rtype) ((char*) patches + x * patches_pitch);
+
+    if (x == 0) {
+        printf("Patches: ");
+        for (size_t i = 0; i < len_vect * 3; i++)
+            printf("%d ", patch[i]);
+        printf("\n");
+        printf("Vect 0: ");
+        for (size_t i = 0; i < len_vect; i++)
+            printf("%d ", patch[i]);
+        printf("\n");
+    } else if (x == 1) {
+        printf("Vect 1: ");
+        for (size_t i = 0; i < len_vect; i++)
+            printf("%d ", patch[i]);
+        printf("\n");
+    } else if (x == 2) {
+        printf("Vect 2: ");
+        for (size_t i = 0; i < len_vect; i++)
+            printf("%d ", patch[i]);
+        printf("\n");
+    }
+
 	for (size_t i = 0; i < len_clusters; i++) {
-		float dist = euclidean_distance((float*) ((char*) clusters + i * cluster_pitch), (rtype) ((char*) patches + x * patches_pitch), len_vect);
+        float* cluster = (float*) ((char*) clusters + i * cluster_pitch);
+
+		float dist = euclidean_distance(cluster, patch, len_vect);
         if (dist < distance_mini || distance_mini == -1) {
             distance_mini = dist;
             mini = i;
@@ -107,21 +134,21 @@ __global__ void random_color(uint8_t* colors, size_t size) {
         return;
     
     curandStatePhilox4_32_10_t state;
-    curand_init(0, /* the seed controls the sequence of random values that are produced */
+    curand_init(42, /* the seed controls the sequence of random values that are produced */
                 x, /* the sequence number is only important with multiple cores */
                 0, /* the offset is how much extra we advance in the sequence for each call, can be 0 */
                 &state);
     colors[x] = curand(&state) % 256;
 }
 
-/*
+
 __global__ void check_clusters(float* clusters) {
     for (int i = 0; i < 10; i++) {
         printf("%f \n", clusters[i]);
     }
 }
 
-__global__ void check_neighbor(int* neighbor) {
+__global__ void check_neighbor(uint8_t* neighbor) {
     printf("START\n");
     for (int i = 0; i < 10; i++) {
         printf("%d \n", neighbor[i]);
@@ -130,16 +157,18 @@ __global__ void check_neighbor(int* neighbor) {
 
 __global__ void check_colors(uint8_t* colors) {
     printf("START\n");
-    for (int i = 0; i < 10; i++) {
-        printf("%d \n", colors[i]);
+    for (int i = 0; i < 16 * 3; i++) {
+        if (i % 3 == 0)
+            printf("Color %d\n", i / 3);
+        printf("%d\n", colors[i]);
     }
 }
-*/
+
 __global__ void change_pixels(uint8_t* img, size_t pitch, size_t width, size_t height, uint8_t* colors, uint8_t* neighbor) {
     size_t x = blockDim.x * blockIdx.x + threadIdx.x;
     size_t y = blockDim.y * blockIdx.y + threadIdx.y;
 
-    if (x >= width ||y >= height)
+    if (x >= width || y >= height)
         return;
     
     uint8_t* pix = &img[y * pitch + x * 3];
@@ -217,6 +246,8 @@ void step_2(rtype hists_cpu, uint8_t* image, size_t width, size_t height) {
 
     checkKernel();
     cudaDeviceSynchronize();
+
+    //check_colors<<<1, 1>>>(colors);
 
     // On recontruit l'image
     uint8_t* img;
