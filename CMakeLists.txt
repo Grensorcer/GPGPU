@@ -7,7 +7,7 @@ project(CUDA_CMAKE LANGUAGES CXX CUDA)
 set(CXX_SRC src/lbp.hh)
 
 # All cuda files
-set(CUDA_SRC src/lbp.hh src/lbp.cu src/lbp2.cu src/nn.cu)
+set(CUDA_SRC src/lbp.hh src/lbp.cu src/lbp2.cu src/lbp3.cu src/nn.cu)
 
 # find dependencies
 find_package(OpenCV REQUIRED)
@@ -59,3 +59,20 @@ target_link_libraries(bench gpuproc
   opencv_highgui
   benchmark
 )
+
+if (NOT CMAKE_BUILD_TYPE STREQUAL "Release")
+	message("                                 ")
+	message("             ^                   ")
+	message("            / \\                  ")
+	message("           / | \\                 ")
+	message("          /  |  \\                ")
+	message("         /   .   \\               ")
+	message("        /_________\\              ")
+	message("                                 ")
+ 	message("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+	message("@ Warning: build in debug mode, @")
+	message("@ benchmarks will be inaccurate @")
+ 	message("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+endif()
+
+

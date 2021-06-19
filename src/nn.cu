@@ -30,8 +30,10 @@
 
 #if defined(naive)
     typedef unsigned short* rtype;
-#else
+#elif defined(v1)
     typedef unsigned * rtype;
+#else
+    typedef short * rtype;
 #endif
 
 // calculate the Euclidean distance between two vectors
@@ -55,25 +57,22 @@ __global__ void get_neighbor(float *clusters, size_t cluster_pitch, size_t len_c
 
     rtype patch = (rtype) ((char*) patches + x * patches_pitch);
 
+    /*
+    if (x <= 10) {
+        int sum = 0;
+        for (size_t i = 0; i < len_vect; i++)
+            sum += patch[i];
+        printf("Vect %lu: %d\n", x, sum);
+    }
+    */
+
     if (x == 0) {
-        printf("Patches: ");
-        for (size_t i = 0; i < len_vect * 3; i++)
-            printf("%d ", patch[i]);
-        printf("\n");
-        printf("Vect 0: ");
-        for (size_t i = 0; i < len_vect; i++)
-            printf("%d ", patch[i]);
-        printf("\n");
-    } else if (x == 1) {
-        printf("Vect 1: ");
-        for (size_t i = 0; i < len_vect; i++)
-            printf("%d ", patch[i]);
-        printf("\n");
-    } else if (x == 2) {
-        printf("Vect 2: ");
-        for (size_t i = 0; i < len_vect; i++)
-            printf("%d ", patch[i]);
-        printf("\n");
+        for (size_t i = 0; i < 16; i++) {
+            float sum = 0;
+            for (size_t j = 0; j < len_vect; j++)
+                sum += patch[j];
+            printf("Cluster %lu: %f\n", i, sum);
+        }
     }
 
 	for (size_t i = 0; i < len_clusters; i++) {
@@ -86,9 +85,11 @@ __global__ void get_neighbor(float *clusters, size_t cluster_pitch, size_t len_c
         }
     }
     neighbor[x] = mini;
-    /*if (threadIdx.x==0)
+    /*
+    if (threadIdx.x==0)
         printf("2ND x = %lu ### bon cluster_pitch = %lu len_clusters = %lu len_vect = %lu patches_pitch = %lu n_patches = %lu\n",
-            x, cluster_pitch, len_clusters, len_vect, patches_pitch, n_patches);*/
+            x, cluster_pitch, len_clusters, len_vect, patches_pitch, n_patches);
+    */
 }
 
 std::string readFileIntoString(const std::string& path) {
@@ -119,7 +120,7 @@ float* read_cluster_csv(int n_clusters, int cluster_size)
     while (std::getline(sstream, record)) {
         std::istringstream line(record);
         while (std::getline(line, record, delimiter)) {
-            items[i] = ::atof(record.c_str()) * 256;
+            items[i] = ::atof(record.c_str());
             i++;
         }
     }

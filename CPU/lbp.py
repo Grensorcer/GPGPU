@@ -11,17 +11,18 @@ def rgb2gray(image):
     return image.mean(axis=-1).astype("int64")
 
 
-def compute_neighbors(image):
-    padded_image = np.pad(image, ((1, 1), (1, 1)), mode="reflect")
+def compute_neighbors(image, tol=1):
+    padded_image = np.pad(image, ((1, 1), (1, 1)), mode="constant", constant_values=0)
+    val = np.where(image - tol >= 0, image - tol, 0)
 
-    top_left = np.where(padded_image[:-2, :-2] < image, 0, 1)
-    top = np.where(padded_image[:-2, 1:-1] < image, 0, 1) * 2
-    top_right = np.where(padded_image[:-2, 2:] < image, 0, 1) * 4
-    right = np.where(padded_image[1:-1, 2:] < image, 0, 1) * 8
-    bottom_right = np.where(padded_image[2:, 2:] < image, 0, 1) * 16
-    bottom = np.where(padded_image[2:, 1:-1] < image, 0, 1) * 32
-    bottom_left = np.where(padded_image[2:, :-2] < image, 0, 1) * 64
-    left = np.where(padded_image[1:-1, :-2] < image, 0, 1) * 128
+    top_left = np.where(padded_image[:-2, :-2] < val, 0, 1)
+    top = np.where(padded_image[:-2, 1:-1] < val, 0, 1) * 2
+    top_right = np.where(padded_image[:-2, 2:] < val, 0, 1) * 4
+    right = np.where(padded_image[1:-1, 2:] < val, 0, 1) * 8
+    bottom_right = np.where(padded_image[2:, 2:] < val, 0, 1) * 16
+    bottom = np.where(padded_image[2:, 1:-1] < val, 0, 1) * 32
+    bottom_left = np.where(padded_image[2:, :-2] < val, 0, 1) * 64
+    left = np.where(padded_image[1:-1, :-2] < val, 0, 1) * 128
 
     image = (
         top_left + top + top_right + left + right + bottom_left + bottom + bottom_right
@@ -98,9 +99,9 @@ def compute_feature_vectors(image, tile_size=16):
 def patch_cluster_classify(feature_vector, nrows, ncols, tile_size, n_clusters=16):
     kmeans = MiniBatchKMeans(n_clusters=n_clusters)
     kmeans.fit(feature_vector)
-    LUT = np.random.rand(n_clusters, 3)
     clusters = kmeans.predict(feature_vector)
-    colored_patches = LUT[clusters].reshape(nrows // tile_size, ncols // tile_size, 3)
+    colored_patches = clusters.reshape(nrows // tile_size, ncols // tile_size)
+    # colored_patches = clusters.reshape(nrows // tile_size, ncols // tile_size)
     colored_patches = np.repeat(colored_patches, tile_size, axis=0)
     colored_patches = np.repeat(colored_patches, tile_size, axis=1)
 
@@ -116,14 +117,48 @@ if __name__ == "__main__":
 
     image = plt.imread(args.image)
     image = rgb2gray(image)
+    plt.imsave("gray.jpg", image, cmap="gray")
 
     nrows, ncols = image.shape
     tile_size = 16
+    n_clusters = 16
 
-    image = compute_neighbors(image)
-    feature_vector = compute_feature_vectors(image, tile_size=tile_size)
+    image0 = compute_neighbors(image, tol=0)
+    feature_vector = compute_feature_vectors(image0, tile_size=tile_size)
     colored_patches = patch_cluster_classify(
-        feature_vector, nrows, ncols, tile_size, n_clusters=16
+        feature_vector, nrows, ncols, tile_size, n_clusters=n_clusters
     )
 
-    plt.imsave("test.jpg", colored_patches)
+    plt.imsave("test_notol.jpg", colored_patches, cmap="tab20")
+
+    image1 = compute_neighbors(image, tol=1)
+    feature_vector = compute_feature_vectors(image1, tile_size=tile_size)
+    colored_patches = patch_cluster_classify(
+        feature_vector, nrows, ncols, tile_size, n_clusters=n_clusters
+    )
+
+    plt.imsave("test_1.jpg", colored_patches, cmap="tab20")
+
+    image2 = compute_neighbors(image, tol=2)
+    feature_vector = compute_feature_vectors(image2, tile_size=tile_size)
+    colored_patches = patch_cluster_classify(
+        feature_vector, nrows, ncols, tile_size, n_clusters=n_clusters
+    )
+
+    plt.imsave("test_2.jpg", colored_patches, cmap="tab20")
+
+    image3 = compute_neighbors(image, tol=3)
+    feature_vector = compute_feature_vectors(image3, tile_size=tile_size)
+    colored_patches = patch_cluster_classify(
+        feature_vector, nrows, ncols, tile_size, n_clusters=n_clusters
+    )
+
+    plt.imsave("test_3.jpg", colored_patches, cmap="tab20")
+
+    image4 = compute_neighbors(image, tol=4)
+    feature_vector = compute_feature_vectors(image4, tile_size=tile_size)
+    colored_patches = patch_cluster_classify(
+        feature_vector, nrows, ncols, tile_size, n_clusters=n_clusters
+    )
+
+    plt.imsave("test_4.jpg", colored_patches, cmap="tab20")

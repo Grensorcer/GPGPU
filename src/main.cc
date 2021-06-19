@@ -44,9 +44,12 @@ int main(int argc, char* argv[])
 #if defined(naive)
     typedef unsigned short* rtype;
     rtype hists = extract_feature_vector_naive(img.data, img.cols, img.rows);
-#else
+#elif defined(v1)
     typedef unsigned * rtype;
     rtype hists = extract_feature_vector_v1(img.data, img.cols, img.rows);
+#else
+    typedef short * rtype;
+    rtype hists = extract_feature_vector_v2(img.data, img.cols, img.rows);
 #endif
 
 

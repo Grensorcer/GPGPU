@@ -1,0 +1,30 @@
+BENCH=../data/barcode-00-01.jpg
+
+---------------------------------------------------------------------
+Benchmark           Time             CPU   Iterations UserCounters...
+---------------------------------------------------------------------
+v2/0         18336647 ns      1750628 ns          410 cols=4.032k pix=12.1928M rows=3.024k
+==320981== Profiling application: ./bench
+==320981== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   33.54%  2.71701s      1820  1.4929ms  1.4516ms  1.7244ms  compare_neighbors_v2(unsigned char*, unsigned long, unsigned long, unsigned long)
+                   29.11%  2.35825s      1820  1.2957ms  1.2334ms  10.062ms  [CUDA memcpy HtoD]
+                   20.87%  1.69108s      1820  929.16us  892.81us  4.9436ms  [CUDA memcpy DtoH]
+                    8.86%  717.54ms      1820  394.26us  379.41us  506.48us  compute_histograms_by_tiles_v2(unsigned char*, unsigned long, unsigned long, unsigned long, unsigned long, char*, unsigned long)
+                    7.63%  617.88ms      1820  339.49us  330.52us  412.66us  greyscale_v2(unsigned char*, unsigned long, unsigned long, unsigned long)
+      API calls:   35.65%  9.88978s      5460  1.8113ms  85.360us  6.5032ms  cudaStreamSynchronize
+                   20.22%  5.60777s      1820  3.0812ms  984.37us  9.3720ms  cudaMemcpy2D
+                   17.31%  4.80054s      5460  879.22us  7.5240us  11.435ms  cudaLaunchKernel
+                   16.57%  4.59555s      1820  2.5250ms  1.1925ms  12.834ms  cudaMemcpy2DAsync
+                    4.41%  1.22404s      1820  672.55us  3.0650us  11.497ms  cudaStreamCreate
+                    2.92%  808.79ms      1820  444.39us  2.4040us  7.7482ms  cudaStreamDestroy
+                    2.37%  657.87ms       910  722.93us  123.47us  159.27ms  cudaMallocPitch
+                    0.55%  153.60ms       910  168.79us  96.030us  402.33us  cudaFree
+                    0.00%  208.27us       101  2.0620us     180ns  89.446us  cuDeviceGetAttribute
+                    0.00%  191.65us         1  191.65us  191.65us  191.65us  cuDeviceTotalMem
+                    0.00%  31.610us         1  31.610us  31.610us  31.610us  cuDeviceGetName
+                    0.00%  6.6120us         1  6.6120us  6.6120us  6.6120us  cuDeviceGetPCIBusId
+                    0.00%  1.8640us         3     621ns     300ns  1.0720us  cuDeviceGetCount
+                    0.00%  1.4520us         2     726ns     210ns  1.2420us  cuDeviceGet
+                    0.00%     340ns         1     340ns     340ns     340ns  cuDeviceGetUuid
+
