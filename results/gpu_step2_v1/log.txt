@@ -1,0 +1,287 @@
+Consolidate compiler generated dependencies of target gpuproc
+Consolidate compiler generated dependencies of target benchmark
+[ 18%] Built target gpuproc
+Consolidate compiler generated dependencies of target lbp
+[ 87%] Built target lbp
+[ 87%] Built target benchmark
+Consolidate compiler generated dependencies of target benchmark_main
+Consolidate compiler generated dependencies of target bench
+[ 96%] Built target benchmark_main
+[100%] Built target bench
+processor	: 0
+vendor_id	: AuthenticAMD
+cpu family	: 15
+model		: 6
+model name	: Common KVM processor
+stepping	: 1
+microcode	: 0x1000065
+cpu MHz		: 2295.660
+cache size	: 512 KB
+physical id	: 0
+siblings	: 1
+core id		: 0
+cpu cores	: 1
+apicid		: 0
+initial apicid	: 0
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx lm rep_good nopl cpuid extd_apicid tsc_known_freq pni cx16 x2apic hypervisor 3dnowprefetch vmmcall
+bugs		: fxsave_leak sysret_ss_attrs null_seg swapgs_fence spectre_v1 spectre_v2
+bogomips	: 4591.32
+TLB size	: 1024 4K pages
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 1
+vendor_id	: AuthenticAMD
+cpu family	: 15
+model		: 6
+model name	: Common KVM processor
+stepping	: 1
+microcode	: 0x1000065
+cpu MHz		: 2295.660
+cache size	: 512 KB
+physical id	: 1
+siblings	: 1
+core id		: 0
+cpu cores	: 1
+apicid		: 1
+initial apicid	: 1
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx lm rep_good nopl cpuid extd_apicid tsc_known_freq pni cx16 x2apic hypervisor 3dnowprefetch vmmcall
+bugs		: fxsave_leak sysret_ss_attrs null_seg swapgs_fence spectre_v1 spectre_v2
+bogomips	: 4591.32
+TLB size	: 1024 4K pages
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 2
+vendor_id	: AuthenticAMD
+cpu family	: 15
+model		: 6
+model name	: Common KVM processor
+stepping	: 1
+microcode	: 0x1000065
+cpu MHz		: 2295.660
+cache size	: 512 KB
+physical id	: 2
+siblings	: 1
+core id		: 0
+cpu cores	: 1
+apicid		: 2
+initial apicid	: 2
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx lm rep_good nopl cpuid extd_apicid tsc_known_freq pni cx16 x2apic hypervisor 3dnowprefetch vmmcall
+bugs		: fxsave_leak sysret_ss_attrs null_seg swapgs_fence spectre_v1 spectre_v2
+bogomips	: 4591.32
+TLB size	: 1024 4K pages
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 3
+vendor_id	: AuthenticAMD
+cpu family	: 15
+model		: 6
+model name	: Common KVM processor
+stepping	: 1
+microcode	: 0x1000065
+cpu MHz		: 2295.660
+cache size	: 512 KB
+physical id	: 3
+siblings	: 1
+core id		: 0
+cpu cores	: 1
+apicid		: 3
+initial apicid	: 3
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx lm rep_good nopl cpuid extd_apicid tsc_known_freq pni cx16 x2apic hypervisor 3dnowprefetch vmmcall
+bugs		: fxsave_leak sysret_ss_attrs null_seg swapgs_fence spectre_v1 spectre_v2
+bogomips	: 4591.32
+TLB size	: 1024 4K pages
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 4
+vendor_id	: AuthenticAMD
+cpu family	: 15
+model		: 6
+model name	: Common KVM processor
+stepping	: 1
+microcode	: 0x1000065
+cpu MHz		: 2295.660
+cache size	: 512 KB
+physical id	: 4
+siblings	: 1
+core id		: 0
+cpu cores	: 1
+apicid		: 4
+initial apicid	: 4
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx lm rep_good nopl cpuid extd_apicid tsc_known_freq pni cx16 x2apic hypervisor 3dnowprefetch vmmcall
+bugs		: fxsave_leak sysret_ss_attrs null_seg swapgs_fence spectre_v1 spectre_v2
+bogomips	: 4591.32
+TLB size	: 1024 4K pages
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 5
+vendor_id	: AuthenticAMD
+cpu family	: 15
+model		: 6
+model name	: Common KVM processor
+stepping	: 1
+microcode	: 0x1000065
+cpu MHz		: 2295.660
+cache size	: 512 KB
+physical id	: 5
+siblings	: 1
+core id		: 0
+cpu cores	: 1
+apicid		: 5
+initial apicid	: 5
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx lm rep_good nopl cpuid extd_apicid tsc_known_freq pni cx16 x2apic hypervisor 3dnowprefetch vmmcall
+bugs		: fxsave_leak sysret_ss_attrs null_seg swapgs_fence spectre_v1 spectre_v2
+bogomips	: 4591.32
+TLB size	: 1024 4K pages
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 6
+vendor_id	: AuthenticAMD
+cpu family	: 15
+model		: 6
+model name	: Common KVM processor
+stepping	: 1
+microcode	: 0x1000065
+cpu MHz		: 2295.660
+cache size	: 512 KB
+physical id	: 6
+siblings	: 1
+core id		: 0
+cpu cores	: 1
+apicid		: 6
+initial apicid	: 6
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx lm rep_good nopl cpuid extd_apicid tsc_known_freq pni cx16 x2apic hypervisor 3dnowprefetch vmmcall
+bugs		: fxsave_leak sysret_ss_attrs null_seg swapgs_fence spectre_v1 spectre_v2
+bogomips	: 4591.32
+TLB size	: 1024 4K pages
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+processor	: 7
+vendor_id	: AuthenticAMD
+cpu family	: 15
+model		: 6
+model name	: Common KVM processor
+stepping	: 1
+microcode	: 0x1000065
+cpu MHz		: 2295.660
+cache size	: 512 KB
+physical id	: 7
+siblings	: 1
+core id		: 0
+cpu cores	: 1
+apicid		: 7
+initial apicid	: 7
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx lm rep_good nopl cpuid extd_apicid tsc_known_freq pni cx16 x2apic hypervisor 3dnowprefetch vmmcall
+bugs		: fxsave_leak sysret_ss_attrs null_seg swapgs_fence spectre_v1 spectre_v2
+bogomips	: 4591.32
+TLB size	: 1024 4K pages
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 40 bits physical, 48 bits virtual
+power management:
+
+Sat Jun 19 15:44:49 2021       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 465.31       Driver Version: 465.31       CUDA Version: 11.3     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|                               |                      |               MIG M. |
+|===============================+======================+======================|
+|   0  NVIDIA GeForce ...  Off  | 00000000:00:04.0 Off |                  N/A |
+| 30%   43C    P0    16W /  75W |    180MiB /  3911MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                                  |
+|  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
+|        ID   ID                                                   Usage      |
+|=============================================================================|
+|    0   N/A  N/A    234644      C   valgrind                           49MiB |
++-----------------------------------------------------------------------------+
+Run bench with  data/barcode-00-01.jpg
+2021-06-19T15:44:50+02:00
+Running ./release/bench
+Run on (8 X 2295.66 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB (x8)
+  L1 Instruction 64 KiB (x8)
+  L2 Unified 512 KiB (x8)
+  L3 Unified 16384 KiB (x8)
+Load Average: 7.64, 6.93, 5.86
+***WARNING*** Library was built as DEBUG. Timings may be affected.
+Run bench with  data/barcode-00-02.jpg
+2021-06-19T15:45:00+02:00
+Running ./release/bench
+Run on (8 X 2295.66 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB (x8)
+  L1 Instruction 64 KiB (x8)
+  L2 Unified 512 KiB (x8)
+  L3 Unified 16384 KiB (x8)
+Load Average: 7.24, 6.87, 5.85
+***WARNING*** Library was built as DEBUG. Timings may be affected.
+Run bench with  data/barcode-00-03.jpg
+2021-06-19T15:45:08+02:00
+Running ./release/bench
+Run on (8 X 2295.66 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB (x8)
+  L1 Instruction 64 KiB (x8)
+  L2 Unified 512 KiB (x8)
+  L3 Unified 16384 KiB (x8)
+Load Average: 7.09, 6.85, 5.85
+***WARNING*** Library was built as DEBUG. Timings may be affected.
