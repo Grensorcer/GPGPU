@@ -41,6 +41,12 @@ int main(int argc, char* argv[])
     unsigned nb_tiles_x = img.cols / 16;
     unsigned nb_tiles_y = img.rows / 16;
 
+
+    short* r_feature_vector;
+    size_t r_pitch;
+    uchar* gpu_img;
+    size_t img_pitch;
+
 #if defined(naive)
     typedef unsigned short* rtype;
     rtype hists = extract_feature_vector_naive(img.data, img.cols, img.rows);
@@ -49,13 +55,14 @@ int main(int argc, char* argv[])
     rtype hists = extract_feature_vector_v1(img.data, img.cols, img.rows);
 #else
     typedef short * rtype;
-    rtype hists = extract_feature_vector_v2(img.data, img.cols, img.rows);
+    rtype hists = extract_feature_vector_v2(img.data, img.cols, img.rows, &r_feature_vector, &r_pitch, &gpu_img, &img_pitch);
 #endif
 
 
 
     // Step 2
-    step_2(hists, img.data, img.cols, img.rows);
+    //step_2(img.data, img.cols, img.rows);
+    step_2_v1(img.data, img.cols, img.rows, r_feature_vector, r_pitch, gpu_img, img_pitch);
 
 
 

@@ -1,23 +1,5 @@
 #pragma once
 
-#if defined(DEBUG)
-
-  // Defined in lbp.cu
-  [[gnu::noinline]]
-  void abortOnError(cudaError_t err,
-                    const char* fname, int line,
-                    bool abort_on_error=true);
-
-  #define checkErr(cudaCall) { abortOnError((cudaCall), __FILE__, __LINE__); }
-
-  #define checkKernel() {                                     \
-                          checkErr(cudaPeekAtLastError());    \
-                          checkErr(cudaDeviceSynchronize());  \
-                        }
-#else
-  #define checkErr(cudaCall) cudaCall
-  #define checkKernel()
-#endif
 
 #if defined(naive)
     typedef unsigned short* rtype;
@@ -30,5 +12,8 @@
     typedef short dtype;
 #endif
 
+typedef unsigned char uchar;
+
 int step_2(rtype hists_cpu, uint8_t* image, size_t width, size_t height);
-rtype read_hist_csv();
+int step_2_v1(uchar* cpu_img, size_t width, size_t height, short* r_feature_vector, size_t r_pitch, uchar* gpu_img, size_t img_pitch);
+rtype read_hist_csv(); // in nn.cu

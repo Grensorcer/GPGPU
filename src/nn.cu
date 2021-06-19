@@ -10,6 +10,26 @@
 #include "utils.hh"
 #include "nn.hh"
 
+
+#if defined(DEBUG)
+
+  // Defined in lbp.cu
+  [[gnu::noinline]]
+  void abortOnError(cudaError_t err,
+                    const char* fname, int line,
+                    bool abort_on_error=true);
+
+  #define checkErr(cudaCall) { abortOnError((cudaCall), __FILE__, __LINE__); }
+
+  #define checkKernel() {                                     \
+                          checkErr(cudaPeekAtLastError());    \
+                          checkErr(cudaDeviceSynchronize());  \
+                        }
+#else
+  #define checkErr(cudaCall) cudaCall
+  #define checkKernel()
+#endif
+
 // calculate the Euclidean distance between two vectors
 __device__ float euclidean_distance(float *vect1, rtype vect2, int len_vect){
 	float distance = 0.0;
@@ -140,7 +160,7 @@ __global__ void change_pixels(uint8_t* img, size_t pitch, size_t width, size_t h
         pix[i] = color[i];
 }
 
-int step_2(rtype hists_cpu, uint8_t* image, size_t width, size_t height) {
+int step_2(rtype hists_cpu, uint8_t* cpu_img, size_t width, size_t height) {
     size_t n_clusters = 16;
     size_t cluster_size = 256;
 
@@ -200,13 +220,13 @@ int step_2(rtype hists_cpu, uint8_t* image, size_t width, size_t height) {
     cudaDeviceSynchronize();
 
     // On recontruit l'image
-    uint8_t* img;
+    uint8_t* gpu_img;
     size_t i_pitch;
 
-    checkErr(cudaMallocPitch(&img, &i_pitch, 3 * width * sizeof(uint8_t), height));
+    checkErr(cudaMallocPitch(&gpu_img, &i_pitch, 3 * width * sizeof(uint8_t), height));
 
-    checkErr(cudaMemcpy2D(img, i_pitch,
-                            image, 3 * width * sizeof(uint8_t),
+    checkErr(cudaMemcpy2D(gpu_img, i_pitch,
+                            cpu_img, 3 * width * sizeof(uint8_t),
                             3 * width * sizeof(uint8_t), height,
                             cudaMemcpyHostToDevice));
 
@@ -217,20 +237,20 @@ int step_2(rtype hists_cpu, uint8_t* image, size_t width, size_t height) {
     dim3 dimBlock(bsize, bsize);
     dim3 dimGrid(w, h);
 
-    change_pixels<<<dimGrid, dimBlock>>>(img, i_pitch, width, height, colors, neighbor);
+    change_pixels<<<dimGrid, dimBlock>>>(gpu_img, i_pitch, width, height, colors, neighbor);
 
     checkKernel();
     cudaDeviceSynchronize();
 
     // On remets l'image en CPU
-    checkErr(cudaMemcpy2D(image, 3 * width * sizeof(uint8_t),
-                            img, i_pitch,
+    checkErr(cudaMemcpy2D(cpu_img, 3 * width * sizeof(uint8_t),
+                            gpu_img, i_pitch,
                             3 * width * sizeof(uint8_t), height,
                             cudaMemcpyDeviceToHost));
 
     checkErr(cudaFree(hists));
     checkErr(cudaFree(clusters));
-    checkErr(cudaFree(img));
+    checkErr(cudaFree(gpu_img));
     checkErr(cudaFree(colors));
     checkErr(cudaFree(neighbor));
 

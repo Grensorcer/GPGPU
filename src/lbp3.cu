@@ -229,7 +229,6 @@ short* extract_feature_vector_v2(uchar* data, unsigned width, unsigned height,
 
 #endif
 
-  checkErr(cudaFree(d_img));
 
   if (r_feature_vector)
   {
@@ -238,8 +237,10 @@ short* extract_feature_vector_v2(uchar* data, unsigned width, unsigned height,
     *gpu_img = d_img;
     *img_pitch = pitch;
   }
-  else
+  else {
     checkErr(cudaFree(hists));
+    checkErr(cudaFree(d_img));
+  }
 
   return h_hists;
 }

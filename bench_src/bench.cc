@@ -155,9 +155,37 @@ static void bench_step2(benchmark::State& s)
   s.counters["pix"] = img.rows * img.cols; 
 }
 
+static void bench_step2_v1(benchmark::State& s)
+{
+  Image img;
+
+  for (auto _ : s)
+  {
+    short* r_feature_vector;
+    size_t r_pitch;
+    uchar* gpu_img;
+    size_t img_pitch;
+
+    img = Image(data[s.range(0)]);
+    benchmark::ClobberMemory();
+    short *res;
+    benchmark::DoNotOptimize(res = extract_feature_vector_v2(img.data, img.cols, img.rows, &r_feature_vector, &r_pitch, &gpu_img, &img_pitch));
+    free(res);
+    int res2;
+    benchmark::DoNotOptimize(res2 = step_2_v1(img.data, img.cols, img.rows, r_feature_vector, r_pitch, gpu_img, img_pitch));
+
+    benchmark::DoNotOptimize(img);
+  }
+
+  s.counters["rows"] = img.rows; 
+  s.counters["cols"] = img.cols; 
+  s.counters["pix"] = img.rows * img.cols; 
+}
+
 BENCHMARK(warmup)->DenseRange(0, data.size() - 1);
 BENCHMARK(naive)->DenseRange(0, data.size() - 1);
 BENCHMARK(v1)->DenseRange(0, data.size() - 1);
 BENCHMARK(v2)->DenseRange(0, data.size() - 1);
-BENCHMARK(bench_step2)->DenseRange(0, data.size() - 1);
+//BENCHMARK(bench_step2)->DenseRange(0, data.size() - 1);
+BENCHMARK(bench_step2_v1)->DenseRange(0, data.size() - 1);
 BENCHMARK_MAIN();
