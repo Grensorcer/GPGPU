@@ -1,5 +1,0 @@
-name,iterations,real_time,cpu_time,time_unit,bytes_per_second,items_per_second,label,error_occurred,error_message,"cols","pix","rows"
-"warmup/0",1,2.03966e+09,1.54114e+09,ns,,,,,,4032,1.21928e+07,3024
-"naive/0",10,6.5359e+07,6.53234e+07,ns,,,,,,4032,1.21928e+07,3024
-"v1/0",4,1.56057e+08,1.55882e+08,ns,,,,,,4032,1.21928e+07,3024
-"v2/0",139,3.85379e+07,4.77596e+06,ns,,,,,,4032,1.21928e+07,3024

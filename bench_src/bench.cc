@@ -9,6 +9,7 @@
 #include "lbp.hh"
 #include "utils.hh"
 #include "image.hh"
+#include "nn.hh"
 
 typedef cv::Mat_<unsigned char> cvmat;
 
@@ -134,8 +135,29 @@ static void v2(benchmark::State& s)
   s.counters["pix"] = img.rows * img.cols; 
 }
 
+static void bench_step2(benchmark::State& s)
+{
+  Image img;
+  rtype hists = read_hist_csv();
+
+  for (auto _ : s)
+  {
+    img = Image(data[s.range(0)]);
+    benchmark::ClobberMemory();
+    int res;
+    benchmark::DoNotOptimize(res = step_2(hists, img.data, img.cols, img.rows));
+
+    benchmark::DoNotOptimize(img);
+  }
+
+  s.counters["rows"] = img.rows; 
+  s.counters["cols"] = img.cols; 
+  s.counters["pix"] = img.rows * img.cols; 
+}
+
 BENCHMARK(warmup)->DenseRange(0, data.size() - 1);
 BENCHMARK(naive)->DenseRange(0, data.size() - 1);
 BENCHMARK(v1)->DenseRange(0, data.size() - 1);
 BENCHMARK(v2)->DenseRange(0, data.size() - 1);
+BENCHMARK(bench_step2)->DenseRange(0, data.size() - 1);
 BENCHMARK_MAIN();
