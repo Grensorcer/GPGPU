@@ -203,7 +203,7 @@ static void global(benchmark::State& s)
     benchmark::DoNotOptimize(hists = extract_feature_vector_v2(img.data, img.cols, img.rows, &r_feature_vector, &r_pitch, &gpu_img, &img_pitch));
     free(hists);
 
-    std::fstream f("release/out.csv", std::fstream::out);
+    std::fstream f("out.csv", std::fstream::out);
     f << "val,\n";
 
     for (unsigned i = 0; i < nb_tiles_x * nb_tiles_y; ++i)
@@ -233,7 +233,7 @@ static void global(benchmark::State& s)
     }
 
     int res;
-    benchmark::DoNotOptimize(res = step_2_v1(img.data, img.cols, img.rows, r_feature_vector, r_pitch, gpu_img, img_pitch, "release/cluster.csv"));
+    benchmark::DoNotOptimize(res = step_2_v1(img.data, img.cols, img.rows, r_feature_vector, r_pitch, gpu_img, img_pitch, "cluster.csv"));
 
     benchmark::DoNotOptimize(img);
   }
