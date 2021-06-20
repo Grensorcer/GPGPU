@@ -81,7 +81,7 @@ def bench_image(image_path, save_path, nb_samples):
         [
             math.ceil(h * s / nb_samples) * math.ceil(w * s / nb_samples)
             for s in range(1, nb_samples + 1)
-        ][::-1],
+        ],
         bench_times,
     )
     plt.savefig(save_path / "time_graph.jpg")
