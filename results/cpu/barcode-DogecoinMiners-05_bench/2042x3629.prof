@@ -1,0 +1,31 @@
+         540835 function calls (511552 primitive calls) in 11.792 seconds
+
+   Ordered by: cumulative time
+   List reduced from 171 to 20 due to restriction <20>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.012    0.012   10.664   10.664 lbp.py:111(lbp1)
+        1    1.817    1.817    5.527    5.527 lbp.py:76(compute_feature_vectors)
+87568/58285    3.451    0.000    5.430    0.000 {built-in method numpy.core._multiarray_umath.implement_array_function}
+        1    1.143    1.143    3.636    3.636 lbp.py:14(compute_neighbors)
+        9    0.000    0.000    2.434    0.270 <__array_function__ internals>:2(where)
+    28702    0.143    0.000    2.243    0.000 <__array_function__ internals>:2(norm)
+    28702    0.955    0.000    1.916    0.000 linalg.py:2362(norm)
+        1    0.001    0.001    1.489    1.489 lbp.py:10(rgb2gray)
+        1    0.000    0.000    1.410    1.410 {method 'mean' of 'numpy.ndarray' objects}
+        1    0.043    0.043    1.410    1.410 _methods.py:161(_mean)
+        4    1.410    0.352    1.410    0.352 {method 'reduce' of 'numpy.ufunc' objects}
+        1    0.000    0.000    1.145    1.145 lbp.py:118(lbp2)
+        1    0.000    0.000    0.905    0.905 _kmeans.py:1893(predict)
+        1    0.000    0.000    0.860    0.860 _kmeans.py:1783(_labels_inertia_minibatch)
+        1    0.007    0.007    0.788    0.788 _kmeans.py:1810(<listcomp>)
+      288    0.031    0.000    0.778    0.003 _kmeans.py:544(_labels_inertia)
+    28702    0.212    0.000    0.699    0.000 <__array_function__ internals>:2(bincount)
+    28702    0.127    0.000    0.555    0.000 <__array_function__ internals>:2(dot)
+      288    0.496    0.002    0.548    0.002 _k_means_lloyd.pyx:29(__pyx_fuse_1lloyd_iter_chunked_dense)
+    28704    0.436    0.000    0.436    0.000 {method 'astype' of 'numpy.ndarray' objects}
+
+
+Execution time in seconds for step 1: 9.1856
+Execution time in seconds for step 2: 0.6097
+Total execution time in seconds: 9.7953

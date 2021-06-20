@@ -1,0 +1,31 @@
+         26657 function calls (25224 primitive calls) in 0.633 seconds
+
+   Ordered by: cumulative time
+   List reduced from 171 to 20 due to restriction <20>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.554    0.554 lbp.py:111(lbp1)
+4292/2859    0.173    0.000    0.273    0.000 {built-in method numpy.core._multiarray_umath.implement_array_function}
+        1    0.079    0.079    0.261    0.261 lbp.py:76(compute_feature_vectors)
+        1    0.060    0.060    0.186    0.186 lbp.py:14(compute_neighbors)
+        9    0.000    0.000    0.123    0.014 <__array_function__ internals>:2(where)
+     1400    0.007    0.000    0.110    0.000 <__array_function__ internals>:2(norm)
+        1    0.000    0.000    0.107    0.107 lbp.py:10(rgb2gray)
+        1    0.000    0.000    0.105    0.105 {method 'mean' of 'numpy.ndarray' objects}
+        1    0.003    0.003    0.105    0.105 _methods.py:161(_mean)
+        4    0.103    0.026    0.103    0.026 {method 'reduce' of 'numpy.ufunc' objects}
+     1400    0.047    0.000    0.094    0.000 linalg.py:2362(norm)
+        1    0.000    0.000    0.080    0.080 lbp.py:118(lbp2)
+        1    0.000    0.000    0.062    0.062 _kmeans.py:1893(predict)
+        1    0.000    0.000    0.060    0.060 _kmeans.py:1783(_labels_inertia_minibatch)
+        1    0.000    0.000    0.058    0.058 _kmeans.py:1810(<listcomp>)
+       14    0.002    0.000    0.057    0.004 _kmeans.py:544(_labels_inertia)
+       14    0.041    0.003    0.044    0.003 _k_means_lloyd.pyx:29(__pyx_fuse_1lloyd_iter_chunked_dense)
+     1400    0.010    0.000    0.034    0.000 <__array_function__ internals>:2(bincount)
+     1400    0.007    0.000    0.027    0.000 <__array_function__ internals>:2(dot)
+     1400    0.020    0.000    0.020    0.000 {method 'flatten' of 'numpy.ndarray' objects}
+
+
+Execution time in seconds for step 1: 0.4204
+Execution time in seconds for step 2: 0.0793
+Total execution time in seconds: 0.4997

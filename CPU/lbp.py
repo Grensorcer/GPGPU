@@ -108,6 +108,35 @@ def patch_cluster_classify(feature_vector, nrows, ncols, tile_size, n_clusters=1
     return colored_patches
 
 
+def lbp1(image, tile_size, tol):
+    image = rgb2gray(image)
+    image = compute_neighbors(image, tol=tol)
+    feature_vector = compute_feature_vectors(image, tile_size=tile_size)
+    return feature_vector
+
+
+def lbp2(image, kmeans, feature_vector, tile_size):
+    nrows, ncols = image.shape[0], image.shape[1]
+    clusters = kmeans.predict(feature_vector)
+    colored_patches = clusters.reshape(nrows // tile_size, ncols // tile_size)
+    colored_patches = np.repeat(colored_patches, tile_size, axis=0)
+    colored_patches = np.repeat(colored_patches, tile_size, axis=1)
+
+    return colored_patches
+
+
+def linear_binary_pattern(image, tile_size, n_clusters, tol):
+    nrows, ncols = image.shape[0], image.shape[1]
+
+    image = rgb2gray(image)
+    image = compute_neighbors(image, tol=tol)
+    feature_vector = compute_feature_vectors(image, tile_size=tile_size)
+    colored_patches = patch_cluster_classify(
+        feature_vector, nrows, ncols, tile_size, n_clusters=n_clusters
+    )
+    return colored_patches
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="CPU implementation for Local Binary Pattern"
@@ -116,49 +145,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     image = plt.imread(args.image)
-    image = rgb2gray(image)
-    plt.imsave("gray.jpg", image, cmap="gray")
 
-    nrows, ncols = image.shape
-    tile_size = 16
-    n_clusters = 16
-
-    image0 = compute_neighbors(image, tol=0)
-    feature_vector = compute_feature_vectors(image0, tile_size=tile_size)
-    colored_patches = patch_cluster_classify(
-        feature_vector, nrows, ncols, tile_size, n_clusters=n_clusters
-    )
-
-    plt.imsave("test_notol.jpg", colored_patches, cmap="tab20")
-
-    image1 = compute_neighbors(image, tol=1)
-    feature_vector = compute_feature_vectors(image1, tile_size=tile_size)
-    colored_patches = patch_cluster_classify(
-        feature_vector, nrows, ncols, tile_size, n_clusters=n_clusters
-    )
-
-    plt.imsave("test_1.jpg", colored_patches, cmap="tab20")
-
-    image2 = compute_neighbors(image, tol=2)
-    feature_vector = compute_feature_vectors(image2, tile_size=tile_size)
-    colored_patches = patch_cluster_classify(
-        feature_vector, nrows, ncols, tile_size, n_clusters=n_clusters
-    )
-
-    plt.imsave("test_2.jpg", colored_patches, cmap="tab20")
-
-    image3 = compute_neighbors(image, tol=3)
-    feature_vector = compute_feature_vectors(image3, tile_size=tile_size)
-    colored_patches = patch_cluster_classify(
-        feature_vector, nrows, ncols, tile_size, n_clusters=n_clusters
-    )
-
-    plt.imsave("test_3.jpg", colored_patches, cmap="tab20")
-
-    image4 = compute_neighbors(image, tol=4)
-    feature_vector = compute_feature_vectors(image4, tile_size=tile_size)
-    colored_patches = patch_cluster_classify(
-        feature_vector, nrows, ncols, tile_size, n_clusters=n_clusters
-    )
-
-    plt.imsave("test_4.jpg", colored_patches, cmap="tab20")
+    colored_patches = linear_binary_pattern(image, 16, 16, 0)
+    plt.imsave("test.jpg", colored_patches, cmap="tab20")

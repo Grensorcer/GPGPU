@@ -1,0 +1,31 @@
+         723810 function calls (684615 primitive calls) in 15.197 seconds
+
+   Ordered by: cumulative time
+   List reduced from 171 to 20 due to restriction <20>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.014    0.014   13.856   13.856 lbp.py:111(lbp1)
+        1    2.453    2.453    7.446    7.446 lbp.py:76(compute_feature_vectors)
+117207/78012    4.286    0.000    6.896    0.000 {built-in method numpy.core._multiarray_umath.implement_array_function}
+        1    1.523    1.523    4.497    4.497 lbp.py:14(compute_neighbors)
+    38420    0.190    0.000    3.014    0.000 <__array_function__ internals>:2(norm)
+        9    0.000    0.000    2.901    0.322 <__array_function__ internals>:2(where)
+    38420    1.291    0.000    2.574    0.000 linalg.py:2362(norm)
+        1    0.001    0.001    1.900    1.900 lbp.py:10(rgb2gray)
+        1    0.000    0.000    1.806    1.806 {method 'mean' of 'numpy.ndarray' objects}
+        1    0.057    0.057    1.806    1.806 _methods.py:161(_mean)
+        4    1.774    0.443    1.774    0.443 {method 'reduce' of 'numpy.ufunc' objects}
+        1    0.000    0.000    1.362    1.362 lbp.py:118(lbp2)
+        1    0.001    0.001    0.994    0.994 _kmeans.py:1893(predict)
+        1    0.001    0.001    0.968    0.968 _kmeans.py:1783(_labels_inertia_minibatch)
+    38420    0.269    0.000    0.946    0.000 <__array_function__ internals>:2(bincount)
+        1    0.011    0.011    0.929    0.929 _kmeans.py:1810(<listcomp>)
+      385    0.040    0.000    0.915    0.002 _kmeans.py:544(_labels_inertia)
+    38420    0.170    0.000    0.740    0.000 <__array_function__ internals>:2(dot)
+      385    0.532    0.001    0.600    0.002 _k_means_lloyd.pyx:29(__pyx_fuse_1lloyd_iter_chunked_dense)
+    38422    0.565    0.000    0.565    0.000 {method 'astype' of 'numpy.ndarray' objects}
+
+
+Execution time in seconds for step 1: 11.8710
+Execution time in seconds for step 2: 0.8381
+Total execution time in seconds: 12.7091
