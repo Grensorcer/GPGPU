@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
       f.close();
 
       // Computes the centroids with python script
-      /*pid_t pid = fork();
+      pid_t pid = fork();
 
       if (pid == 0) {
         char* command = "python";
@@ -98,7 +98,7 @@ int main(int argc, char* argv[])
       }
       else {
           waitpid(pid, NULL, WUNTRACED | WCONTINUED);
-      }*/
+      }
 
       // Step 2
       //step_2(img.data, img.cols, img.rows);

@@ -5,6 +5,11 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/videoio.hpp>
+#include <wait.h>
+#include <unistd.h>
+
+#include <string>
+#include <fstream>
 
 #include "lbp.hh"
 #include "utils.hh"
@@ -176,16 +181,69 @@ static void bench_step2_v1(benchmark::State& s)
 
     benchmark::DoNotOptimize(img);
   }
+}
 
-  s.counters["rows"] = img.rows; 
-  s.counters["cols"] = img.cols; 
-  s.counters["pix"] = img.rows * img.cols; 
+static void global(benchmark::State& s)
+{
+  Image img;
+
+  for (auto _ : s)
+  {
+    short* r_feature_vector;
+    size_t r_pitch;
+    uchar* gpu_img;
+    size_t img_pitch;
+
+    img = Image(data[s.range(0)]);
+    unsigned nb_tiles_x = img.cols / 16;
+    unsigned nb_tiles_y = img.rows / 16;
+
+    benchmark::ClobberMemory();
+    short *hists;
+    benchmark::DoNotOptimize(hists = extract_feature_vector_v2(img.data, img.cols, img.rows, &r_feature_vector, &r_pitch, &gpu_img, &img_pitch));
+    free(hists);
+
+    std::fstream f("out.csv", std::fstream::out);
+    f << "val,\n";
+
+    for (unsigned i = 0; i < nb_tiles_x * nb_tiles_y; ++i)
+    {
+      rtype h = hists + 256 * i;
+
+      for (unsigned j = 0; j < 256; j++)
+        f << h[j] << ",\n"; 
+    }
+
+    f.close();
+
+    // Computes the centroids with python script
+    pid_t pid = fork();
+
+    if (pid == 0) {
+      char* command = "python";
+      char* argument_list[] = {"python", "src/kmeans.py", NULL};
+      int status_code = execvp(command, argument_list);
+
+      if (status_code == -1) {
+        Log::dbg("Execvp failed");
+      }
+    }
+    else {
+        waitpid(pid, NULL, WUNTRACED | WCONTINUED);
+    }
+
+    int res;
+    benchmark::DoNotOptimize(res = step_2_v1(img.data, img.cols, img.rows, r_feature_vector, r_pitch, gpu_img, img_pitch));
+
+    benchmark::DoNotOptimize(img);
+  }
 }
 
 BENCHMARK(warmup)->DenseRange(0, data.size() - 1);
 BENCHMARK(naive)->DenseRange(0, data.size() - 1);
 BENCHMARK(v1)->DenseRange(0, data.size() - 1);
 BENCHMARK(v2)->DenseRange(0, data.size() - 1);
-//BENCHMARK(bench_step2)->DenseRange(0, data.size() - 1);
+BENCHMARK(bench_step2)->DenseRange(0, 0/*, data.size() - 1*/); // Cannot bench this one with other file than barcode-00-01.jpg histograms for now
 BENCHMARK(bench_step2_v1)->DenseRange(0, data.size() - 1);
+BENCHMARK(global)->DenseRange(0, data.size() - 1);
 BENCHMARK_MAIN();

@@ -78,7 +78,7 @@ std::string readFileIntoString_v1(const std::string& path) {
 
 float* read_cluster_csv_v1(int n_clusters, int cluster_size)
 {
-    std::string filename("cluster.csv");
+    std::string filename("release/cluster.csv");
     std::string file_contents;
     char delimiter = ',';
 
