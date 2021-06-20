@@ -72,12 +72,13 @@ std::string readFileIntoString_v1(const std::string& path) {
         exit(EXIT_FAILURE);
     }
     ss << input_file.rdbuf();
+    input_file.close();
     return ss.str();
 }
 
 float* read_cluster_csv_v1(int n_clusters, int cluster_size)
 {
-    std::string filename("release/cluster.csv");
+    std::string filename("cluster.csv");
     std::string file_contents;
     char delimiter = ',';
 

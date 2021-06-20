@@ -1,6 +1,8 @@
 #include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <wait.h>
+#include <unistd.h>
 
 #include "image.hh"
 #include "utils.hh"
@@ -58,14 +60,6 @@ int main(int argc, char* argv[])
     rtype hists = extract_feature_vector_v2(img.data, img.cols, img.rows, &r_feature_vector, &r_pitch, &gpu_img, &img_pitch);
 #endif
 
-
-
-    // Step 2
-    //step_2(img.data, img.cols, img.rows);
-    step_2_v1(img.data, img.cols, img.rows, r_feature_vector, r_pitch, gpu_img, img_pitch);
-
-
-
     if (display_image)
     {
       cv::imshow("gpgpu", frame);
@@ -88,6 +82,27 @@ int main(int argc, char* argv[])
       }
 
       f.close();
+
+      // Computes the centroids with python script
+      /*pid_t pid = fork();
+
+      if (pid == 0) {
+        char* command = "python";
+        char* argument_list[] = {"python", "../src/kmeans.py", NULL};
+        int status_code = execvp(command, argument_list);
+
+        if (status_code == -1) {
+          Log::dbg("Execvp failed");
+          return 1;
+        }
+      }
+      else {
+          waitpid(pid, NULL, WUNTRACED | WCONTINUED);
+      }*/
+
+      // Step 2
+      //step_2(img.data, img.cols, img.rows);
+      step_2_v1(img.data, img.cols, img.rows, r_feature_vector, r_pitch, gpu_img, img_pitch);
 
       Log::dbg(img.rows / 16, ' ', img.cols/ 16);
 
