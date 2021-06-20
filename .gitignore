@@ -33,6 +33,11 @@
 
 data/
 build
+release
+debug
+__pycache__
+CMakeFiles
 
 .vscode
 *.jpg
+

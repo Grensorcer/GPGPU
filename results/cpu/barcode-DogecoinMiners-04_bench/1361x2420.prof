@@ -1,0 +1,31 @@
+         242032 function calls (228934 primitive calls) in 0.773 seconds
+
+   Ordered by: cumulative time
+   List reduced from 171 to 20 due to restriction <20>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.705    0.705 lbp.py:111(lbp1)
+39172/26074    0.215    0.000    0.349    0.000 {built-in method numpy.core._multiarray_umath.implement_array_function}
+        1    0.093    0.093    0.309    0.309 lbp.py:76(compute_feature_vectors)
+        1    0.145    0.145    0.308    0.308 lbp.py:14(compute_neighbors)
+        9    0.000    0.000    0.157    0.017 <__array_function__ internals>:2(where)
+    12835    0.008    0.000    0.128    0.000 <__array_function__ internals>:2(norm)
+    12835    0.055    0.000    0.109    0.000 linalg.py:2362(norm)
+        1    0.000    0.000    0.088    0.088 lbp.py:10(rgb2gray)
+        1    0.000    0.000    0.082    0.082 {method 'mean' of 'numpy.ndarray' objects}
+        1    0.003    0.003    0.082    0.082 _methods.py:161(_mean)
+        4    0.081    0.020    0.081    0.020 {method 'reduce' of 'numpy.ufunc' objects}
+        1    0.000    0.000    0.069    0.069 lbp.py:118(lbp2)
+    12835    0.012    0.000    0.041    0.000 <__array_function__ internals>:2(bincount)
+        1    0.000    0.000    0.036    0.036 _kmeans.py:1893(predict)
+        1    0.000    0.000    0.034    0.034 _kmeans.py:1783(_labels_inertia_minibatch)
+        2    0.000    0.000    0.033    0.017 <__array_function__ internals>:2(repeat)
+        3    0.000    0.000    0.033    0.011 fromnumeric.py:52(_wrapfunc)
+        2    0.000    0.000    0.033    0.016 fromnumeric.py:437(repeat)
+        2    0.033    0.016    0.033    0.016 {method 'repeat' of 'numpy.ndarray' objects}
+        1    0.000    0.000    0.031    0.031 _kmeans.py:1810(<listcomp>)
+
+
+Execution time in seconds for step 1: 0.5860
+Execution time in seconds for step 2: 0.0395
+Total execution time in seconds: 0.6255
