@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
+import argparse
+import multiprocessing
 import matplotlib.pyplot as plt
 import numpy as np
 import sklearn as sk
 from sklearn.cluster import MiniBatchKMeans
-import argparse
 
 
 def rgb2gray(image):
@@ -73,26 +74,30 @@ def compute_neighbors_per_tile(image, tile_size=16):
     return image
 
 
+def hist_compute(arg):
+    i, j, image, tile_size = arg
+    hist = np.bincount(
+        image[
+            i * tile_size : (i + 1) * tile_size,
+            j * tile_size : (j + 1) * tile_size,
+        ].flatten(),
+        minlength=256,
+    ).astype("float64")
+    hist /= np.linalg.norm(hist)
+    return hist
+
+
 def compute_feature_vectors(image, tile_size=16):
     t_nrows = image.shape[0] // tile_size
     t_ncols = image.shape[1] // tile_size
-    feature_vector = np.zeros(
-        (t_nrows * t_ncols, 256),
-        dtype="float64",
-    )
 
-    for i in range(t_nrows):
-        for j in range(t_ncols):
-            hist = np.bincount(
-                image[
-                    i * tile_size : (i + 1) * tile_size,
-                    j * tile_size : (j + 1) * tile_size,
-                ].flatten(),
-                minlength=256,
-            ).astype("float64")
-            hist /= np.linalg.norm(hist)
-            feature_vector[j + i * t_ncols] = hist
+    with multiprocessing.Pool() as pool:
+        hists = pool.map(
+            hist_compute,
+            [(i, j, image, tile_size) for i in range(t_nrows) for j in range(t_ncols)],
+        )
 
+    feature_vector = np.vstack(hists)
     return feature_vector
 
 
@@ -146,5 +151,5 @@ if __name__ == "__main__":
 
     image = plt.imread(args.image)
 
-    colored_patches = linear_binary_pattern(image, 16, 16, 0)
+    colored_patches = linear_binary_pattern(image, 16, 16, 2)
     plt.imsave("test.jpg", colored_patches, cmap="tab20")
