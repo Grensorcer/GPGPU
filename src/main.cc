@@ -101,8 +101,8 @@ int main(int argc, char* argv[])
       }
 
       // Step 2
-      //step_2(img.data, img.cols, img.rows);
-      step_2_v1(img.data, img.cols, img.rows, r_feature_vector, r_pitch, gpu_img, img_pitch);
+      //step_2(img.data, img.cols, img.rows, "cluster.csv");
+      step_2_v1(img.data, img.cols, img.rows, r_feature_vector, r_pitch, gpu_img, img_pitch, "cluster.csv");
 
       Log::dbg(img.rows / 16, ' ', img.cols/ 16);
 

@@ -75,9 +75,9 @@ std::string readFileIntoString(const std::string& path) {
     return ss.str();
 }
 
-float* read_cluster_csv(int n_clusters, int cluster_size)
+float* read_cluster_csv(int n_clusters, int cluster_size, char* cluster_file)
 {
-    std::string filename("release/cluster.csv");
+    std::string filename(cluster_file);
     std::string file_contents;
     char delimiter = ',';
 
@@ -160,7 +160,7 @@ __global__ void change_pixels(uint8_t* img, size_t pitch, size_t width, size_t h
         pix[i] = color[i];
 }
 
-int step_2(rtype hists_cpu, uint8_t* cpu_img, size_t width, size_t height) {
+int step_2(rtype hists_cpu, uint8_t* cpu_img, size_t width, size_t height, char* cluster_file) {
     size_t n_clusters = 16;
     size_t cluster_size = 256;
 
@@ -169,7 +169,7 @@ int step_2(rtype hists_cpu, uint8_t* cpu_img, size_t width, size_t height) {
     size_t hists_size = nb_tiles_x * nb_tiles_y;
 
     // Lecture du fichier des clusters et stockage RAM
-    float* clusters_cpu = read_cluster_csv(n_clusters, cluster_size);
+    float* clusters_cpu = read_cluster_csv(n_clusters, cluster_size, cluster_file);
     // Copie des données clusters sur device (VRAM)
     float* clusters;
     size_t c_pitch;
