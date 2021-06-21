@@ -18,7 +18,12 @@
 
 typedef cv::Mat_<unsigned char> cvmat;
 
-std::vector<cvmat> data = []()
+std::vector<short*> r_feature_vector_v;
+std::vector<size_t> r_pitch_v;
+std::vector<uchar*> gpu_img_v;
+std::vector<size_t> img_pitch_v;
+
+auto data = []()
 {
   std::string path = std::getenv("BENCH");
   if (!path.size())
@@ -47,6 +52,8 @@ std::vector<cvmat> data = []()
   }
 
   data.push_back(full_img);
+
+
 /*
   for (unsigned i = 1; i < 6; ++i)
   {
@@ -57,6 +64,15 @@ std::vector<cvmat> data = []()
     data.push_back(img);
   }
 */
+  for (const auto& img : data)
+  {
+    short* feature_vector;
+    uchar* gpu_img;
+    size_t r_pitch, img_pitch;
+    free(extract_feature_vector_v2(img.data, img.cols, img.rows,
+                                    &feature_vector, &r_pitch,
+                                    &gpu_img, &img_pitch));
+  }
 
   return data;
 }();
