@@ -160,6 +160,42 @@ static void v2(benchmark::State& s)
   s.counters["pix"] = img.rows * img.cols; 
 }
 
+std::string readFileIntoString_bench(const std::string& path) {
+    auto ss = std::ostringstream();
+    std::ifstream input_file(path);
+    if (!input_file.is_open()) {
+        std::cerr << "Could not open the file - '"
+             << path << "'" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    ss << input_file.rdbuf();
+    return ss.str();
+}
+
+float* read_cluster_csv_bench(int n_clusters, int cluster_size, char* cluster_file)
+{
+    std::string filename(cluster_file);
+    std::string file_contents;
+    char delimiter = ',';
+
+    file_contents = readFileIntoString_bench(filename);
+
+    std::istringstream sstream(file_contents);
+    float* items = (float*) malloc(n_clusters * cluster_size * sizeof(float));
+    std::string record;
+
+    int i = 0;
+    while (std::getline(sstream, record)) {
+        std::istringstream line(record);
+        while (std::getline(line, record, delimiter)) {
+            items[i] = ::atof(record.c_str());
+            i++;
+        }
+    }
+
+    return items;
+}
+
 static void bench_step2(benchmark::State& s)
 {
   Image img;
@@ -185,6 +221,8 @@ static void bench_step2_v1(benchmark::State& s)
   Image img;
   size_t i = 0;
 
+  auto clusters = read_cluster_csv_bench(16, 256, "release/cluster.csv");
+
   for (auto _ : s)
   {
     short* r_feature_vector = r_feature_vector_v[i];
@@ -195,7 +233,7 @@ static void bench_step2_v1(benchmark::State& s)
     img = Image(data[s.range(0)]);
     benchmark::ClobberMemory();
     int res2;
-    benchmark::DoNotOptimize(res2 = step_2_v1(img.data, img.cols, img.rows, r_feature_vector, r_pitch, gpu_img, img_pitch, "release/cluster.csv"));
+    benchmark::DoNotOptimize(res2 = step_2_v1(img.data, img.cols, img.rows, r_feature_vector, r_pitch, gpu_img, img_pitch, clusters));
     benchmark::DoNotOptimize(img);
 
     i++;
@@ -224,7 +262,6 @@ static void global(benchmark::State& s)
     benchmark::ClobberMemory();
     short *hists;
     benchmark::DoNotOptimize(hists = extract_feature_vector_v2(img.data, img.cols, img.rows, &r_feature_vector, &r_pitch, &gpu_img, &img_pitch));
-    free(hists);
 
     std::fstream f("out.csv", std::fstream::out);
     f << "val,\n";
@@ -238,6 +275,7 @@ static void global(benchmark::State& s)
     }
 
     f.close();
+    free(hists);
 
     // Computes the centroids with python script
     pid_t pid = fork();
@@ -255,8 +293,10 @@ static void global(benchmark::State& s)
         waitpid(pid, NULL, WUNTRACED | WCONTINUED);
     }
 
+    auto clusters = read_cluster_csv_bench(16, 256, "cluster.csv");
+
     int res;
-    benchmark::DoNotOptimize(res = step_2_v1(img.data, img.cols, img.rows, r_feature_vector, r_pitch, gpu_img, img_pitch, "cluster.csv"));
+    benchmark::DoNotOptimize(res = step_2_v1(img.data, img.cols, img.rows, r_feature_vector, r_pitch, gpu_img, img_pitch, clusters));
 
     benchmark::DoNotOptimize(img);
   }

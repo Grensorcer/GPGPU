@@ -13,6 +13,42 @@
 #include <string>
 #include <fstream>
 
+std::string readFileIntoString_main(const std::string& path) {
+    auto ss = std::ostringstream();
+    std::ifstream input_file(path);
+    if (!input_file.is_open()) {
+        std::cerr << "Could not open the file - '"
+             << path << "'" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    ss << input_file.rdbuf();
+    return ss.str();
+}
+
+float* read_cluster_csv_main(int n_clusters, int cluster_size, char* cluster_file)
+{
+    std::string filename(cluster_file);
+    std::string file_contents;
+    char delimiter = ',';
+
+    file_contents = readFileIntoString_main(filename);
+
+    std::istringstream sstream(file_contents);
+    float* items = (float*) malloc(n_clusters * cluster_size * sizeof(float));
+    std::string record;
+
+    int i = 0;
+    while (std::getline(sstream, record)) {
+        std::istringstream line(record);
+        while (std::getline(line, record, delimiter)) {
+            items[i] = ::atof(record.c_str());
+            i++;
+        }
+    }
+
+    return items;
+}
+
 // This leak 24 bytes.
 int main(int argc, char* argv[])
 {
@@ -100,9 +136,13 @@ int main(int argc, char* argv[])
           waitpid(pid, NULL, WUNTRACED | WCONTINUED);
       }
 
+      auto clusters = read_cluster_csv_main(16, 256, "cluster.csv");
+
       // Step 2
-      //step_2(img.data, img.cols, img.rows, "cluster.csv");
-      step_2_v1(img.data, img.cols, img.rows, r_feature_vector, r_pitch, gpu_img, img_pitch, "cluster.csv");
+      //step_2(hists, img.data, img.cols, img.rows, "cluster.csv");
+      step_2_v1(img.data, img.cols, img.rows, r_feature_vector, r_pitch, gpu_img, img_pitch, clusters);
+
+      free(hists);
 
       Log::dbg(img.rows / 16, ' ', img.cols/ 16);
 

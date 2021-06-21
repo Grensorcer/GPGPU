@@ -134,16 +134,14 @@ __global__ void change_pixels_v1(uchar* img, size_t pitch, size_t width, size_t 
         pix[i] = color[i];
 }
 
-int step_2_v1(uchar* cpu_img, size_t width, size_t height, short* hists, size_t h_pitch, uchar* gpu_img, size_t i_pitch, char* cluster_file) {
+int step_2_v1(uchar* cpu_img, size_t width, size_t height, short* hists, size_t h_pitch, uchar* gpu_img, size_t i_pitch, float* clusters_cpu) {
     size_t n_clusters = 16;
     size_t cluster_size = 256;
 
     size_t nb_tiles_x = width / 16;
     size_t nb_tiles_y = height / 16;
     size_t hists_size = nb_tiles_x * nb_tiles_y;
-
-    // Lecture du fichier des clusters et stockage RAM
-    float* clusters_cpu = read_cluster_csv_v1(n_clusters, cluster_size, cluster_file);
+    
     // Copie des données clusters sur device (VRAM)
     float* clusters;
     size_t c_pitch;
