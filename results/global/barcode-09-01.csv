@@ -1,0 +1,8 @@
+name,iterations,real_time,cpu_time,time_unit,bytes_per_second,items_per_second,label,error_occurred,error_message,"cols","pix","rows"
+"warmup/0",10,8.06802e+07,8.01677e+07,ns,,,,,,4000,1.2e+07,3000
+"naive/0",9,6.77206e+07,6.76185e+07,ns,,,,,,4000,1.2e+07,3000
+"v1/0",9,8.21847e+07,8.20677e+07,ns,,,,,,4000,1.2e+07,3000
+"v2/0",100,4.07024e+07,2.53854e+06,ns,,,,,,4000,1.2e+07,3000
+"bench_step2/0",14,4.83612e+07,4.81559e+07,ns,,,,,,4000,1.2e+07,3000
+"bench_step2_v1/0",2217,324719,323955,ns,,,,,,4000,1.2e+07,3000
+"global/0",1,9.04307e+09,1.95855e+09,ns,,,,,,4000,1.2e+07,3000

@@ -72,6 +72,10 @@ auto data = []()
     free(extract_feature_vector_v2(img.data, img.cols, img.rows,
                                     &feature_vector, &r_pitch,
                                     &gpu_img, &img_pitch));
+    r_feature_vector_v.push_back(feature_vector);
+    r_pitch_v.push_back(r_pitch);
+    gpu_img_v.push_back(gpu_img);
+    img_pitch_v.push_back(img_pitch);
   }
 
   return data;
@@ -179,24 +183,27 @@ static void bench_step2(benchmark::State& s)
 static void bench_step2_v1(benchmark::State& s)
 {
   Image img;
+  size_t i = 0;
 
   for (auto _ : s)
   {
-    short* r_feature_vector;
-    size_t r_pitch;
-    uchar* gpu_img;
-    size_t img_pitch;
+    short* r_feature_vector = r_feature_vector_v[i];
+    size_t r_pitch = r_pitch_v[i];
+    uchar* gpu_img = gpu_img_v[i];
+    size_t img_pitch = img_pitch_v[i];
 
     img = Image(data[s.range(0)]);
     benchmark::ClobberMemory();
-    short *res;
-    benchmark::DoNotOptimize(res = extract_feature_vector_v2(img.data, img.cols, img.rows, &r_feature_vector, &r_pitch, &gpu_img, &img_pitch));
-    free(res);
     int res2;
     benchmark::DoNotOptimize(res2 = step_2_v1(img.data, img.cols, img.rows, r_feature_vector, r_pitch, gpu_img, img_pitch, "release/cluster.csv"));
-
     benchmark::DoNotOptimize(img);
+
+    i++;
   }
+
+  s.counters["rows"] = img.rows; 
+  s.counters["cols"] = img.cols; 
+  s.counters["pix"] = img.rows * img.cols; 
 }
 
 static void global(benchmark::State& s)
@@ -253,6 +260,10 @@ static void global(benchmark::State& s)
 
     benchmark::DoNotOptimize(img);
   }
+
+  s.counters["rows"] = img.rows; 
+  s.counters["cols"] = img.cols; 
+  s.counters["pix"] = img.rows * img.cols; 
 }
 
 BENCHMARK(warmup)->DenseRange(0, data.size() - 1);
